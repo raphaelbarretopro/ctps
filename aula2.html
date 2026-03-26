@@ -20,7 +20,7 @@
         body.era-2017 { --primary: #00e6ff; background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), var(--img-2017); }
 
         body { background-color: #000; color: var(--text); font-family: 'Roboto', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: all 1s ease; overflow: hidden; background-size: cover; background-position: center; background-attachment: fixed; }
-        #game-container { width: 95%; max-width: 900px; background: var(--panel); padding: 30px; border-radius: 20px; border: 2px solid var(--primary); backdrop-filter: blur(10px); text-align: center; position: relative; z-index: 10; }
+        #game-container { width: 95%; max-width: 900px; background: var(--panel); padding: 30px; border-radius: 20px; border: 2px solid var(--primary); backdrop-filter: blur(10px); text-align: center; position: relative; z-index: 10; max-height: 95vh; overflow-y: auto; }
         .hidden { display: none !important; }
 
         /* ROLETA */
@@ -35,7 +35,6 @@
         .stext { position: absolute; transform: rotate(45deg); width: 120px; text-align: center; left: 25px; top: 55px; font-size: 1.2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
         #center-year-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: #000; color: #fff; padding: 10px 20px; border: 3px solid var(--primary); border-radius: 10px; font-family: 'Orbitron'; font-size: 3.5rem; z-index: 150; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; box-shadow: 0 0 40px rgba(0,0,0,1); }
         .show-year { transform: translate(-50%, -50%) scale(1.2) !important; }
-        .highlight-seg { transform: rotate(var(--rot)) scale(1.4) !important; z-index: 100; box-shadow: inset 0 0 50px white; border: 1px solid white; }
 
         /* FOGOS */
         .firework { position: fixed; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; animation: explode 1s ease-out forwards; z-index: 9999; }
@@ -49,6 +48,16 @@
         .t-box { background: var(--primary); color: #000; border: 2px solid #fff; border-radius: 5px; font-family: 'Orbitron'; z-index: 5; }
         .t-box-ok { background: #27ae60 !important; color: white; }
 
+        /* DRAG AND DROP */
+        .drag-area { display: flex; flex-direction: column; gap: 10px; margin: 15px 0; }
+        .drag-pool { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; }
+        .drop-zones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; }
+        .drop-box { background: rgba(255,255,255,0.05); border: 1px dashed var(--primary); padding: 10px; border-radius: 8px; }
+        .target-zone { background: rgba(255,255,255,0.1); border: 2px solid transparent; min-height: 45px; margin-top: 5px; border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+        .target-zone.over { border-color: #fff; background: rgba(212, 175, 55, 0.2); }
+        .target-zone.filled { background: #27ae60; border-style: solid; border-color: #2ecc71; }
+        .drag-card { background: var(--primary); color: #000; padding: 8px 12px; border-radius: 5px; cursor: grab; font-weight: bold; font-family: 'Orbitron'; font-size: 0.85rem; }
+
         .opt-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--primary); color: white; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 8px; font-size: 1rem; }
         .opt-btn:hover { background: var(--primary); color: #000; font-weight: bold; }
         #p-name-input { padding: 15px; width: 80%; font-size: 2rem; text-align: center; border-radius: 10px; background: #000; color: #fff; border: 2px solid var(--primary); font-family: 'Orbitron'; }
@@ -59,8 +68,8 @@
 
     <div id="game-container">
         <div id="start-screen">
-            <h2 style="font-family: 'Cinzel'; color: var(--primary);">⚔️ SAGA TRABALHISTA: 50 DESAFIOS (NÍVEL MÉDIO) ⚔️</h2>
-            <p>Preparado para o desafio técnico? Digite seu nome para começar.</p>
+            <h2 style="font-family: 'Cinzel'; color: var(--primary);">⚔️ SAGA TRABALHISTA: 50 DESAFIOS ⚔️</h2>
+            <p>Nível Médio: Questões de Múltipla Escolha, V/F e Drag & Drop.</p>
             <input type="text" id="p-name-input" placeholder="NOME DO ALUNO" autofocus>
             <br><br>
             <button class="opt-btn" style="width: 300px; background: var(--primary); color: #000; font-weight: bold;" onclick="startGame()">INICIAR JORNADA</button>
@@ -94,7 +103,6 @@
                 <button class="opt-btn" style="width: 50px; margin:0;" onclick="moveP(0,1)">↓</button>
             </div>
             <button class="opt-btn" style="width: auto; padding: 10px 40px; margin-top: 15px; background: #444;" onclick="resetSokoban()">Reiniciar</button>
-            
             <div id="history-modal" class="hidden">
                 <h2 id="hist-year" style="color:var(--primary)"></h2>
                 <p id="hist-text" style="font-size:1rem; line-height:1.4; text-align:justify;"></p>
@@ -105,7 +113,14 @@
         <div id="quiz-screen" class="hidden">
             <div id="era-tag" style="background:var(--primary); color:#000; padding:4px 12px; border-radius:5px; font-weight:bold; margin-bottom:8px;"></div>
             <p id="q-txt" style="font-size:1.4rem; margin-bottom:15px; font-weight:500;"></p>
+            
             <div id="opts" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;"></div>
+            
+            <div id="drag-drop-container" class="drag-area hidden">
+                <div class="drag-pool" id="drag-pool"></div>
+                <div class="drop-zones" id="drop-zones"></div>
+            </div>
+
             <div id="fb-area" style="margin-top:15px; font-weight:bold; font-size:1.1rem;"></div>
             <button id="next-btn" class="opt-btn hidden" onclick="handleNext()">AVANÇAR ➔</button>
         </div>
@@ -113,76 +128,75 @@
 
 <script>
 let curStep = 0, playerName = "", isReady = false, stats = { correct: 0, mistakes: [] };
-let rot = 0, spinTimer;
+let rot = 0, spinTimer, dragsFixed = 0;
 
 const eraInfo = {
-    "1943": "Consolidação (CLT): Surgimento da proteção jurídica. O desafio médio foca nos elementos do vínculo e distinções entre tipos de trabalhadores.",
-    "1966": "Garantia (FGTS): Transição da estabilidade decenal para o regime do fundo. Foco em alíquotas, prazos e regras de movimentação técnica.",
-    "1988": "Cidadania (CF/88): A 'Constituição Cidadã'. O desafio aborda cálculos de jornada, prazos de licenças e proteção contra despedida.",
-    "2017": "Modernização (Reforma): A Lei 13.467. Foco em regime intermitente, prevalência do negociado e novas regras de rescisão."
+    "1943": "Consolidação (CLT): Desafios sobre os fundamentos do vínculo e proteção ao trabalhador.",
+    "1966": "Garantia (FGTS): Questões técnicas sobre depósitos, alíquotas e multas rescisórias.",
+    "1988": "Cidadania (CF/88): Direitos constitucionais, jornada de trabalho e licenças.",
+    "2017": "Modernização (Reforma): Novas regras contratuais, teletrabalho e prevalência do negociado."
 };
 
 const rawQuests = [
-    // 1943 (15 QUESTÕES - DIFICULDADE MÉDIA)
-    { era: "1943", q: "[NAME], qual destes não é um requisito cumulativo para caracterizar o vínculo de emprego (Art. 3º CLT)?", ans: ["Pessoalidade", "Onerosidade", "Exclusividade", "Subordinação"], cor: "Exclusividade", hit: "A exclusividade não é requisito legal; um trabalhador pode ter dois empregos se houver compatibilidade de horários." },
-    { era: "1943", q: "[NAME], se um profissional presta serviços por meio de uma empresa (PJ), mas tem horário fixo e recebe ordens diretas, ocorre o fenômeno da:", ans: ["Terceirização lícita", "Pejotização", "Parceria Comercial", "Autonomia"], cor: "Pejotização", hit: "A 'pejotização' é a fraude onde se oculta o vínculo de emprego através de uma PJ." },
-    { era: "1943", q: "O Princípio da Alteridade na CLT significa que, para você [NAME]:", ans: ["O risco é do empregador", "O risco é dividido", "O lucro é do empregado", "O Estado paga a conta"], cor: "O risco é do empregador", hit: "O Art. 2º da CLT diz que o empregador assume os riscos da atividade econômica." },
-    { era: "1943", q: "[NAME], qual a diferença principal entre o Trabalhador Autônomo e o Empregado?", ans: ["O Salário", "A Subordinação", "O Local", "O Uniforme"], cor: "A Subordinação", hit: "O autônomo organiza sua própria atividade; o empregado segue ordens (subordinação)." },
-    { era: "1943", q: "No requisito da Habitualidade, [NAME], o que define o vínculo não é a continuidade diária, mas sim a:", ans: ["Amizade", "Expectativa de Retorno", "Vontade do Patrão", "Quantidade de horas"], cor: "Expectativa de Retorno", hit: "Se há uma escala prevista e expectativa de que o trabalhador retorne, há habitualidade." },
-    { era: "1943", q: "[NAME], a Pessoalidade significa que o contrato de trabalho é considerado:", ans: ["Adesão", "Intuitu Personae", "Aleatório", "Solene"], cor: "Intuitu Personae", hit: "Termo jurídico para 'em consideração à pessoa'. Você não pode ser substituído por terceiros." },
-    { era: "1943", q: "Se o empregador paga o salário com 'vadiagem' ou atrasos constantes, [NAME], ele fere qual requisito?", ans: ["Onerosidade", "Pessoalidade", "Habitualidade", "Subordinação"], cor: "Onerosidade", hit: "Onerosidade é o dever de pagar pelo serviço prestado; o salário é a contraprestação." },
-    { era: "1943", q: "[NAME], o estagiário (Lei 11.788) possui vínculo empregatício com a empresa?", ans: ["Sim, sempre", "Não, é ato educativo", "Só se receber bem", "Só se tiver 18 anos"], cor: "Não, é ato educativo", hit: "O estágio não gera vínculo se cumprir os requisitos da Lei do Estágio." },
-    { era: "1943", q: "[NAME], o contrato de experiência pode ter duração máxima de quantos dias?", ans: ["30 dias", "60 dias", "90 dias", "120 dias"], cor: "90 dias", hit: "O Art. 445 da CLT limita a experiência a 90 dias (pode ser 45+45)." },
-    { era: "1943", q: "Na hierarquia das normas, [NAME], o que acontece se o contrato individual for pior que a CLT?", ans: ["Vale o contrato", "A CLT prevalece", "Anula-se o emprego", "O juiz decide"], cor: "A CLT prevalece", hit: "Pelo Princípio da Proteção, aplica-se a norma mais favorável ao trabalhador." },
-    { era: "1943", q: "[NAME], o chamado 'Poder Diretivo' permite ao empregador:", ans: ["Bater no funcionário", "Organizar e fiscalizar", "Não pagar salário", "Prender o empregado"], cor: "Organizar e fiscalizar", hit: "O patrão tem o poder de organizar, controlar e disciplinar o trabalho." },
-    { era: "1943", q: "Qual destes trabalhadores é regido por estatuto próprio e não pela CLT, [NAME]?", ans: ["Bancário", "Servidor Público Estatutário", "Vendedor", "TI"], cor: "Servidor Público Estatutário", hit: "Servidores concursados de entes públicos seguem estatutos (Ex: Lei 8.112)." },
-    { era: "1943", q: "[NAME], o trabalho doméstico é regido integralmente pela CLT de 1943?", ans: ["Sim", "Não, tem lei própria", "Só para cozinheiros", "Sim, desde 1943"], cor: "Não, tem lei própria", hit: "Domésticos seguem a Lei Complementar 150/2015 (PEC das Domésticas)." },
-    { era: "1943", q: "O que é o 'Jus Variandi' do empregador, [NAME]?", ans: ["Mudar o salário", "Alterar pequenas condições", "Demitir sem pagar", "Contratar parentes"], cor: "Alterar pequenas condições", hit: "É o direito do patrão de alterar levemente a prestação de serviços (ex: trocar de setor)." },
-    { era: "1943", q: "[NAME], a anotação na CTPS deve ser feita em quanto tempo após a admissão?", ans: ["24 horas", "5 dias úteis", "30 dias", "15 dias"], cor: "5 dias úteis", hit: "A empresa tem 5 dias úteis para anotar a admissão na CTPS (Digital ou Física)." },
+    // 1943 - MIX (15 QUESTÕES)
+    { type: "drag", era: "1943", q: "Arraste os requisitos do vínculo para as definições:", items: [{id:"d1", txt:"Pessoalidade", match:"z1"}, {id:"d2", txt:"Onerosidade", match:"z2"}], zones: [{id:"z1", label:"O serviço deve ser feito por você."}, {id:"z2", label:"Recebimento de salário."}], hit: "Pessoalidade e Onerosidade são pilares do Art. 3º." },
+    { type: "multiple", era: "1943", q: "[NAME], qual prazo a empresa tem para anotar a CTPS hoje?", ans: ["24h", "5 dias úteis", "15 dias", "30 dias"], cor: "5 dias úteis", hit: "A Lei de Liberdade Econômica alterou o prazo para 5 dias úteis." },
+    { type: "boolean", era: "1943", q: "[NAME], o estagiário possui vínculo empregatício?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "Estágio é ato educativo, não gera vínculo se cumprir a Lei 11.788." },
+    { type: "multiple", era: "1943", q: "Quem assume os riscos da atividade econômica?", ans: ["Empregado", "Empregador", "Governo", "Sindicato"], cor: "Empregador", hit: "Pelo Princípio da Alteridade, o risco é do patrão." },
+    { type: "boolean", era: "1943", q: "[NAME], o trabalho voluntário preenche o requisito da Onerosidade?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "O trabalho voluntário é gratuito por definição." },
+    { type: "drag", era: "1943", q: "Relacione os poderes do empregador:", items: [{id:"d3", txt:"Diretivo", match:"z3"}, {id:"d4", txt:"Disciplinar", match:"z4"}], zones: [{id:"z3", label:"Organizar e fiscalizar."}, {id:"z4", label:"Aplicar punições lícitas."}], hit: "O poder diretivo permite ao patrão gerir o negócio." },
+    { type: "multiple", era: "1943", q: "O contrato de experiência pode durar no máximo:", ans: ["30 dias", "90 dias", "120 dias", "60 dias"], cor: "90 dias", hit: "Limite máximo de 90 dias (pode ser 45+45)." },
+    { type: "boolean", era: "1943", q: "A 'Pejotização' é uma forma legal de ocultar vínculo?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "É fraude quando oculta subordinação e pessoalidade." },
+    { type: "multiple", era: "1943", q: "Qual o limite da suspensão disciplinar na CLT?", ans: ["10 dias", "30 dias", "5 dias", "45 dias"], cor: "30 dias", hit: "Suspensão superior a 30 dias vira rescisão indireta." },
+    { type: "boolean", era: "1943", q: "Servidor Público Concursado é regido pela CLT?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "Eles seguem regime estatutário próprio." },
+    { type: "drag", era: "1943", q: "Requisitos: Ordens e Frequência", items: [{id:"d5", txt:"Subordinação", match:"z5"}, {id:"d6", txt:"Habitualidade", match:"z6"}], zones: [{id:"z5", label:"Seguir ordens diretas."}, {id:"z6", label:"Rotina de retorno."}], hit: "Subordinação e Habitualidade fecham o Art. 3º." },
+    { type: "multiple", era: "1943", q: "O que é 'Jus Variandi'?", ans: ["Reduzir salário", "Mudar pequenas regras", "Demitir sem aviso", "Pagar em dólar"], cor: "Mudar pequenas regras", hit: "Direito de alterar detalhes na prestação de serviço." },
+    { type: "boolean", era: "1943", q: "O empregador pode ser pessoa física?", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Ex: Patrão doméstico ou produtor rural." },
+    { type: "multiple", era: "1943", q: "O contrato de trabalho é tecnicamente:", ans: ["Unilateral", "Bilateral e Consensual", "Gratuito", "Invisível"], cor: "Bilateral e Consensual", hit: "Acordo de vontades entre duas partes." },
+    { type: "boolean", era: "1943", q: "O trabalhador autônomo tem subordinação?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "O autônomo organiza seu próprio trabalho." },
 
-    // 1966 (10 QUESTÕES - DIFICULDADE MÉDIA)
-    { era: "1966", q: "Em 1966, [NAME], o FGTS surgiu como alternativa a qual direito antigo?", ans: ["Férias", "Estabilidade Decenal", "13º Salário", "Aviso Prévio"], cor: "Estabilidade Decenal", hit: "Antigamente, após 10 anos o funcionário era estável; o FGTS substituiu esse modelo.", trans: "1966" },
-    { era: "1966", q: "[NAME], no caso de falecimento do empregado, quem pode sacar o FGTS?", ans: ["O Patrão", "Dependentes habilitados", "O Governo", "Ninguém"], cor: "Dependentes habilitados", hit: "O saldo é liberado para os dependentes ou sucessores legais via alvará." },
-    { era: "1966", q: "[NAME], o depósito do FGTS incide sobre quais verbas?", ans: ["Só salário fixo", "Salário, horas extras e adicionais", "Apenas bonificações", "Vale transporte"], cor: "Salário, horas extras e adicionais", hit: "O FGTS incide sobre todas as verbas de natureza salarial." },
-    { era: "1966", q: "Se o [NAME] for demitido por Justa Causa, ele tem direito ao saque do FGTS?", ans: ["Sim", "Não", "Só metade", "Só após 3 anos"], cor: "Não", hit: "Na justa causa o trabalhador perde o direito ao saque e à multa de 40%." },
-    { era: "1966", q: "[NAME], qual a alíquota de FGTS para o empregado doméstico?", ans: ["8%", "2%", "11,2%", "20%"], cor: "11,2%", hit: "8% mensal + 3,2% (antecipação da multa rescisória) via eSocial." },
-    { era: "1966", q: "[NAME], o empregador que não deposita o FGTS comete falta grave, permitindo ao empregado a:", ans: ["Demissão comum", "Rescisão Indireta", "Greve individual", "Folga remunerada"], cor: "Rescisão Indireta", hit: "A falta de depósitos de FGTS é motivo para o funcionário 'demitir' a empresa via judicial." },
-    { era: "1966", q: "Quantos anos de conta inativa (sem depósitos) permitem o saque total, [NAME]?", ans: ["1 ano", "3 anos", "5 anos", "10 anos"], cor: "3 anos", hit: "Permanecer 3 anos fora do regime do FGTS permite o saque do saldo." },
-    { era: "1966", q: "[NAME], o Saque-Aniversário impede o recebimento de qual valor na demissão?", ans: ["Multa de 40%", "Saldo Total do FGTS", "Aviso Prévio", "Férias"], cor: "Saldo Total do FGTS", hit: "No saque-aniversário, se demitido, você recebe a multa de 40%, mas o saldo fica retido." },
-    { era: "1966", q: "[NAME], em caso de força maior ou culpa recíproca, a multa do FGTS cai para:", ans: ["10%", "20%", "0%", "30%"], cor: "20%", hit: "Na culpa recíproca (ambos erraram gravemente), a multa é reduzida para 20%." },
-    { era: "1966", q: "O FGTS Digital, [NAME], utiliza qual sistema como base de dados?", ans: ["eSocial", "Receita Federal", "Poupatempo", "Cartórios"], cor: "eSocial", hit: "O FGTS Digital é alimentado pelas informações enviadas ao eSocial pelas empresas." },
+    // 1966 - MIX (10 QUESTÕES)
+    { type: "drag", era: "1966", q: "Relacione as alíquotas do FGTS:", items: [{id:"d7", txt:"Padrão", match:"z7"}, {id:"d8", txt:"Aprendiz", match:"z8"}], zones: [{id:"z7", label:"Depósito de 8%."}, {id:"z8", label:"Depósito de 2%."}], hit: "Aprendizes têm alíquota reduzida.", trans: "1966" },
+    { type: "multiple", era: "1966", q: "O FGTS incide sobre quais verbas?", ans: ["Apenas salário fixo", "Salário e Horas Extras", "Apenas bonificações", "Vale transporte"], cor: "Salário e Horas Extras", hit: "Incide sobre todas as verbas salariais." },
+    { type: "boolean", era: "1966", q: "O FGTS pode ser descontado do salário?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "É obrigação exclusiva do empregador." },
+    { type: "multiple", era: "1966", q: "Qual a multa do FGTS na demissão Sem Justa Causa?", ans: ["20%", "40%", "10%", "50%"], cor: "40%", hit: "Indenização compensatória de 40%." },
+    { type: "boolean", era: "1966", q: "Demissão por Justa Causa permite saque do FGTS?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "Na justa causa o saque é bloqueado." },
+    { type: "multiple", era: "1966", q: "Pode usar o FGTS para qual finalidade?", ans: ["Comprar carro", "Casa Própria", "Viagem", "Pagar dívidas"], cor: "Casa Própria", hit: "Uso para moradia, doenças graves ou aposentadoria." },
+    { type: "boolean", era: "1966", q: "O FGTS substituiu a estabilidade decenal?", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Antigamente havia estabilidade após 10 anos." },
+    { type: "multiple", era: "1966", q: "Qual o prazo para depósito (FGTS Digital)?", ans: ["Dia 7", "Dia 20", "Dia 5", "Dia 30"], cor: "Dia 20", hit: "Com o novo sistema, o prazo mudou para o dia 20." },
+    { type: "boolean", era: "1966", q: "O banco gestor do FGTS é o Itaú?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "A gestora oficial é a Caixa Econômica Federal." },
+    { type: "multiple", era: "1966", q: "Na Culpa Recíproca, a multa cai para:", ans: ["40%", "20%", "10%", "0%"], cor: "20%", hit: "Quando ambos erram, a multa é reduzida pela metade." },
 
-    // 1988 (15 QUESTÕES - DIFICULDADE MÉDIA)
-    { era: "1988", q: "[NAME], a CF/88 estabelece que a jornada para turnos ininterruptos de revezamento é de:", ans: ["8 horas", "6 horas", "4 horas", "12 horas"], cor: "6 horas", hit: "Para quem alterna horários (dia/noite) semanalmente, a jornada é menor (6h).", trans: "1988" },
-    { era: "1988", q: "[NAME], qual o limite de horas extras diárias permitido pela CLT?", ans: ["1 hora", "2 horas", "4 horas", "Ilimitado"], cor: "2 horas", hit: "O Art. 59 permite no máximo 2 horas extras por dia via acordo." },
-    { era: "1988", q: "[NAME], o adicional de Insalubridade de grau máximo é de quantos %?", ans: ["10%", "20%", "40%", "100%"], cor: "40%", hit: "Os graus são 10% (mínimo), 20% (médio) e 40% (máximo) sobre o salário mínimo." },
-    { era: "1988", q: "E o adicional de Periculosidade, [NAME], é de quanto?", ans: ["20% do mínimo", "30% do salário base", "50% do total", "10% do base"], cor: "30% do salário base", hit: "Periculosidade é 30% fixo sobre o salário base, sem contar prêmios ou gratificações." },
-    { era: "1988", q: "[NAME], se você trabalha 12x36, você tem direito a receber horas extras pelo domingo?", ans: ["Sim", "Não", "Em dobro", "Só se o patrão quiser"], cor: "Não", hit: "Na escala 12x36, os domingos e feriados trabalhados já são considerados compensados." },
-    { era: "1988", q: "Qual o prazo para pagamento das verbas rescisórias após a demissão, [NAME]?", ans: ["2 dias", "10 dias corridos", "30 dias", "Próximo mês"], cor: "10 dias corridos", hit: "Independentemente do tipo de aviso prévio, o prazo é de 10 dias após o fim do contrato." },
-    { era: "1988", q: "[NAME], o período onde você trabalha para ganhar o direito às férias chama-se:", ans: ["Período Concessivo", "Período Aquisitivo", "Período de Carência", "Período de Prova"], cor: "Período Aquisitivo", hit: "Aquisitivo: os 12 meses que você trabalha. Concessivo: os 12 meses que a empresa tem para te dar a folga." },
-    { era: "1988", q: "Se a empresa não conceder as férias no prazo legal, [NAME], ela deve pagar:", ans: ["O valor simples", "O valor em dobro", "Nada, perdeu o direito", "Multa de 1 salário"], cor: "O valor em dobro", hit: "Férias vencidas (fora do período concessivo) devem ser pagas em dobro." },
-    { era: "1988", q: "[NAME], o que é o Abono Pecuniário de férias?", ans: ["Vender 10 dias", "Comprar 5 dias", "Adiantar o 13º", "Trabalhar no feriado"], cor: "Vender 10 dias", hit: "É o direito do empregado de converter 1/3 do período de férias em dinheiro." },
-    { era: "1988", q: "A licença-paternidade de 20 dias, [NAME], só vale para empresas que participam do:", ans: ["Sindicato", "Programa Empresa Cidadã", "Simples Nacional", "Bolsa de Valores"], cor: "Programa Empresa Cidadã", hit: "A CF/88 garante 5 dias; os 20 dias dependem da adesão da empresa ao programa federal." },
-    { era: "1988", q: "[NAME], o Seguro-Desemprego pode ser solicitado a partir de quantas parcelas?", ans: ["3 a 5 parcelas", "10 parcelas", "1 parcela fixa", "Variável pela idade"], cor: "3 a 5 parcelas", hit: "O número de parcelas depende de quantas vezes você já pediu e do tempo trabalhado." },
-    { era: "1988", q: "Em caso de aborto não criminoso, [NAME], a mulher tem direito a quanto tempo de repouso?", ans: ["120 dias", "2 semanas", "30 dias", "Nenhum"], cor: "2 semanas", hit: "A lei garante 2 semanas de repouso remunerado em caso de aborto espontâneo." },
-    { era: "1988", q: "[NAME], o intervalo entre jornadas (Interjornada) de 11h pode ser reduzido?", ans: ["Sim, por acordo", "Não, é norma de saúde", "Só em TI", "Sim, para 8h"], cor: "Não, é norma de saúde", hit: "O descanso de 11h entre um dia e outro é rígido para proteção da saúde do trabalhador." },
-    { era: "1988", q: "O descanso semanal (DSR) de 24h deve ser concedido após quantos dias de trabalho?", ans: ["5 dias", "6 dias", "7 dias", "10 dias"], cor: "6 dias", hit: "O repouso deve ocorrer no máximo após o 6º dia consecutivo de trabalho." },
-    { era: "1988", q: "[NAME], qual a tolerância de minutos diários no registro de ponto sem gerar extra ou atraso?", ans: ["5 min", "10 min total (5+5)", "15 min", "Não há"], cor: "10 min total (5+5)", hit: "O Art. 58 da CLT tolera 5 minutos na entrada e 5 na saída, totalizando 10 min por dia." },
+    // 1988 - MIX (15 QUESTÕES)
+    { type: "drag", era: "1988", q: "Relacione Adicionais (CF/88):", items: [{id:"d9", txt:"Extra", match:"z9"}, {id:"d10", txt:"Férias", match:"z10"}], zones: [{id:"z9", label:"Mínimo de 50%."}, {id:"z10", label:"Adicional de 1/3."}], hit: "Direitos garantidos pela Constituição.", trans: "1988" },
+    { type: "multiple", era: "1988", q: "Qual a jornada semanal máxima?", ans: ["40h", "44h", "48h", "36h"], cor: "44h", hit: "A CF/88 fixou o limite de 44h semanais." },
+    { type: "boolean", era: "1988", q: "A licença maternidade é de 120 dias?", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Mínimo constitucional de 120 dias." },
+    { type: "multiple", era: "1988", q: "Adicional de Insalubridade grau máximo:", ans: ["10%", "20%", "40%", "30%"], cor: "40%", hit: "O grau máximo é de 40% sobre o mínimo." },
+    { type: "boolean", era: "1988", q: "Hora noturna urbana dura 60 minutos?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "Dura 52 minutos e 30 segundos (redução ficta)." },
+    { type: "multiple", era: "1988", q: "Licença paternidade mínima:", ans: ["1 dia", "5 dias", "15 dias", "30 dias"], cor: "5 dias", hit: "A CF/88 garante o mínimo de 5 dias corridos." },
+    { type: "boolean", era: "1988", q: "Seguro Desemprego é pago no pedido de demissão?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "Apenas na demissão involuntária sem justa causa." },
+    { type: "multiple", era: "1988", q: "Férias vencidas devem ser pagas:", ans: ["Simples", "Em dobro", "Triplo", "Não paga"], cor: "Em dobro", hit: "Multa por não conceder no período concessivo." },
+    { type: "boolean", era: "1988", q: "Intervalo de almoço conta como jornada?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "O intervalo intrajornada não é computado na jornada." },
+    { type: "drag", era: "1988", q: "Relacione Adicionais Técnicos:", items: [{id:"d11", txt:"Periculosidade", match:"z11"}, {id:"d12", txt:"Noturno Urbano", match:"z12"}], zones: [{id:"z11", label:"30% sobre o Base."}, {id:"z12", label:"Mínimo de 20%."}], hit: "Periculosidade não incide sobre gratificações." },
+    { type: "multiple", era: "1988", q: "Prazo para pagar verbas rescisórias:", ans: ["2 dias", "10 dias corridos", "30 dias", "5 dias"], cor: "10 dias corridos", hit: "Prazo unificado pela Reforma de 2017." },
+    { type: "boolean", era: "1988", q: "DSR deve ser preferencialmente aos Domingos?", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Regra para o descanso semanal remunerado." },
+    { type: "multiple", era: "1988", q: "O 13º salário é pago em quantas parcelas?", ans: ["1 parcela", "2 parcelas", "3 parcelas", "4 parcelas"], cor: "2 parcelas", hit: "Adiantamento até nov e saldo até dez." },
+    { type: "boolean", era: "1988", q: "Grávida tem estabilidade até 5 meses pós-parto?", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Garantia constitucional de emprego." },
+    { type: "multiple", era: "1988", q: "Aviso prévio mínimo de quem tem 1 ano de casa:", ans: ["15 dias", "30 dias", "33 dias", "60 dias"], cor: "30 dias", hit: "O mínimo proporcional começa em 30 dias." },
 
-    // 2017 (10 QUESTÕES - DIFICULDADE MÉDIA)
-    { era: "2017", q: "[NAME], na Reforma de 2017, o tempo que você gasta no transporte da empresa (horas in itinere):", ans: ["Continua pago", "Não é mais tempo à disposição", "Só conta metade", "Vale como extra"], cor: "Não é mais tempo à disposição", hit: "O tempo de deslocamento não é mais considerado jornada, mesmo em local de difícil acesso.", trans: "2017" },
-    { era: "2017", q: "[NAME], o contrato intermitente deve ser convocado com qual antecedência mínima?", ans: ["24 horas", "3 dias corridos", "1 semana", "12 horas"], cor: "3 dias corridos", hit: "A empresa chama com 3 dias de antecedência; o funcionário tem 24h para aceitar ou não." },
-    { era: "2017", q: "[NAME], se um funcionário aceita a convocação intermitente e falta sem motivo, a multa é de:", ans: ["50% da remuneração", "100% da diária", "Demitido na hora", "Suspensão de 30 dias"], cor: "50% da remuneração", hit: "A parte que descumprir o aceite paga multa de 50% à outra parte em 30 dias." },
-    { era: "2017", q: "[NAME], o Banco de Horas individual (sem sindicato) pode ter validade de até:", ans: ["1 mês", "6 meses", "1 ano", "2 anos"], cor: "6 meses", hit: "Acordo individual escrito para banco de horas vale por no máximo 6 meses." },
-    { era: "2017", q: "Na rescisão por Comum Acordo, [NAME], o aviso prévio se for indenizado é pago:", ans: ["Integral", "Pela Metade (50%)", "Não é pago", "Em dobro"], cor: "Pela Metade (50%)", hit: "No acordo mútuo, o aviso prévio indenizado é pago apenas pela metade." },
-    { era: "2017", q: "[NAME], a demissão em massa (coletiva) precisa de autorização do Sindicato hoje?", ans: ["Sim, obrigatório", "Não, equipara-se à individual", "Só se tiver greve", "Só para empresas grandes"], cor: "Não, equipara-se à individual", hit: "A Reforma de 2017 dispensou a autorização prévia do sindicato para demissões coletivas." },
-    { era: "2017", q: "[NAME], quem é o 'Empregado Hipersuficiente' segundo a Reforma?", ans: ["Quem ganha bem", "Diploma superior + 2x teto INSS", "Gerentes e Diretores", "Donos de empresa"], cor: "Diploma superior + 2x teto INSS", hit: "Estes profissionais podem negociar cláusulas contratuais livremente, com força de acordo coletivo." },
-    { era: "2017", q: "[NAME], a gratificação de função (cargo de confiança) após 10 anos pode ser incorporada?", ans: ["Sim, direito adquirido", "Não, pode ser retirada", "Só metade", "Sim, se for concursado"], cor: "Não, pode ser retirada", hit: "A Reforma acabou com a incorporação da gratificação de função, mesmo após 10 anos." },
-    { era: "2017", q: "[NAME], em relação ao intervalo de almoço, se a empresa conceder apenas 30min sem acordo:", ans: ["Paga a hora cheia", "Paga apenas os 30min faltantes + 50%", "Não paga nada", "Leva multa do governo"], cor: "Paga apenas os 30min faltantes + 50%", hit: "Agora paga-se apenas o período suprimido com natureza indenizatória (adicional de 50%)." },
-    { era: "2017", q: "[NAME], a homologação da rescisão no Sindicato ainda é obrigatória?", ans: ["Sim, para todos", "Não, facultativa", "Só para menores", "Só para quem tem 10 anos"], cor: "Não, facultativa", hit: "A rescisão pode ser feita diretamente na empresa, sem passar pelo sindicato." }
+    // 2017 - MIX (10 QUESTÕES)
+    { type: "drag", era: "2017", q: "Novidades da Reforma:", items: [{id:"d13", txt:"Intermitente", match:"z13"}, {id:"d14", txt:"Teletrabalho", match:"z14"}], zones: [{id:"z13", label:"Recebe por hora convocado."}, {id:"z14", label:"Trabalho remoto."}], hit: "Novas modalidades da Lei 13.467.", trans: "2017" },
+    { type: "multiple", era: "2017", q: "Reduzir o almoço para 30min exige o quê?", ans: ["Só avisar", "Acordo Coletivo", "Ordem do Patrão", "Nada"], cor: "Acordo Coletivo", hit: "O negociado prevalece para reduzir até 30min." },
+    { type: "boolean", era: "2017", q: "Homologação no sindicato ainda é obrigatória?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "A reforma tornou a homologação facultativa." },
+    { type: "multiple", era: "2017", q: "Saque do FGTS no Comum Acordo:", ans: ["100%", "80%", "50%", "20%"], cor: "80%", hit: "Movimenta-se 80% do saldo depositado." },
+    { type: "boolean", era: "2017", q: "Contribuição Sindical é facultativa?", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "O desconto exige autorização prévia e expressa." },
+    { type: "multiple", era: "2017", q: "Férias podem ser parceladas em até:", ans: ["2 vezes", "3 vezes", "5 vezes", "Não pode"], cor: "3 vezes", hit: "Um período deve ter ao menos 14 dias." },
+    { type: "boolean", era: "2017", q: "Banco de Horas individual pode durar 6 meses?", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Acordo individual escrito para até 6 meses." },
+    { type: "multiple", era: "2017", q: "Hipersuficiente (Superior + 2x Teto INSS) pode:", ans: ["Trabalhar sem lei", "Negociar livremente", "Não pagar imposto", "Demitir o RH"], cor: "Negociar livremente", hit: "Livre estipulação das cláusulas contratuais." },
+    { type: "boolean", era: "2017", q: "O tempo de transporte (In Itinere) ainda é pago?", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "Não é mais considerado tempo à disposição." },
+    { type: "multiple", era: "2017", q: "Demissão por Comum Acordo paga multa de:", ans: ["40%", "20%", "10%", "0%"], cor: "20%", hit: "A multa rescisória cai pela metade no acordo." }
 ];
 
-// MANTENDO TODA A LÓGICA DO SCRIPT ORIGINAL
 function triggerExplosion() {
     for (let i = 0; i < 70; i++) {
         const f = document.createElement('div'); f.className = 'firework';
@@ -222,8 +236,7 @@ function startSpin() {
 function stopSpin() {
     clearInterval(spinTimer);
     const target = rawQuests[curStep].trans;
-    let final;
-    if(target === "1966") final = 315; if(target === "1988") final = 225; if(target === "2017") final = 135;
+    let final = target === "1966" ? 315 : target === "1988" ? 225 : 135;
     document.getElementById('wheel').style.transform = `rotate(${final + (360 * 5)}deg)`;
     document.getElementById('stop-btn').innerText = "ABRINDO PORTAL...";
     
@@ -306,6 +319,15 @@ function proceedToQuiz() {
 
 function renderQ() {
     const q = rawQuests[curStep];
+    const optsBox = document.getElementById('opts');
+    const ddBox = document.getElementById('drag-drop-container');
+    const fbArea = document.getElementById('fb-area');
+    const nextBtn = document.getElementById('next-btn');
+
+    optsBox.innerHTML = ""; ddBox.innerHTML = "";
+    ddBox.classList.add('hidden'); optsBox.classList.remove('hidden');
+    fbArea.innerText = ""; nextBtn.classList.add('hidden');
+
     if (q.trans && !isReady) {
         document.getElementById('quiz-screen').classList.add('hidden');
         document.getElementById('portal-screen').classList.remove('hidden');
@@ -313,38 +335,86 @@ function renderQ() {
         document.getElementById('spin-btn').innerText = "GIRAR PARA " + q.trans;
         return;
     }
+
     document.body.className = `era-${q.era}`;
     document.getElementById('era-tag').innerText = `ERA ${q.era}`;
     document.getElementById('q-txt').innerText = q.q.replace("[NAME]", playerName);
     
-    const shuffledAns = shuffle([...q.ans]);
-    const oBox = document.getElementById('opts'); 
-    oBox.innerHTML = "";
-    
-    shuffledAns.forEach((a) => {
-        const b = document.createElement('button'); 
-        b.className = "opt-btn";
-        b.innerText = a; 
-        b.onclick = () => check(a, q.cor, b);
-        oBox.appendChild(b);
-    });
-    document.getElementById('fb-area').innerText = "";
-    document.getElementById('next-btn').classList.add('hidden');
+    if (q.type === "drag") {
+        optsBox.classList.add('hidden');
+        ddBox.classList.remove('hidden');
+        renderDrag(q);
+    } else {
+        const shuffledAns = (q.type === "boolean") ? q.ans : shuffle([...q.ans]);
+        shuffledAns.forEach((a) => {
+            const b = document.createElement('button');
+            b.className = "opt-btn";
+            b.innerText = a;
+            b.onclick = () => check(a, q.cor, b);
+            optsBox.appendChild(b);
+        });
+    }
     isReady = false;
+}
+
+function renderDrag(q) {
+    const ddBox = document.getElementById('drag-drop-container');
+    ddBox.innerHTML = `<div class="drag-pool" id="drag-pool"></div><div class="drop-zones" id="drop-zones"></div>`;
+    const pool = document.getElementById('drag-pool');
+    const zones = document.getElementById('drop-zones');
+    dragsFixed = 0;
+
+    q.items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "drag-card";
+        div.innerText = item.txt;
+        div.draggable = true;
+        div.id = item.id;
+        div.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+        pool.appendChild(div);
+    });
+
+    q.zones.forEach(z => {
+        const box = document.createElement('div');
+        box.className = "drop-box";
+        box.innerHTML = `<span>${z.label}</span><div class="target-zone" data-match="${z.id}"></div>`;
+        zones.appendChild(box);
+    });
+
+    document.querySelectorAll('.target-zone').forEach(zone => {
+        zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('over'); };
+        zone.ondragleave = () => zone.classList.remove('over');
+        zone.ondrop = (e) => {
+            e.preventDefault(); zone.classList.remove('over');
+            const draggedId = e.dataTransfer.getData("text");
+            const item = q.items.find(i => i.id === draggedId);
+            if (item.match === zone.dataset.match) {
+                zone.appendChild(document.getElementById(draggedId));
+                zone.classList.add('filled');
+                dragsFixed++;
+                if (dragsFixed === q.items.length) {
+                    stats.correct++;
+                    document.getElementById('fb-area').innerHTML = `<span style="color:#2ecc71">✓ Tudo correto!</span><br><small>${q.hit}</small>`;
+                    document.getElementById('next-btn').classList.remove('hidden');
+                    triggerExplosion();
+                }
+            } else { alert("Ops! Definição incorreta."); }
+        };
+    });
 }
 
 function check(selected, correct, btn) {
     const q = rawQuests[curStep];
     if(selected === correct) {
         stats.correct++;
-        document.getElementById('fb-area').innerHTML = `<span style="color:#2ecc71">✓ Precisão técnica, ${playerName}!</span><br><small style="color:#ccc">${q.hit}</small>`;
+        document.getElementById('fb-area').innerHTML = `<span style="color:#2ecc71">✓ Mandou muito bem, ${playerName}!</span><br><small style="color:#ccc">${q.hit}</small>`;
         btn.style.background = "#2ecc71";
         document.getElementById('next-btn').classList.remove('hidden');
     } else {
         if(!stats.mistakes.find(m => m.id === curStep)) {
             stats.mistakes.push({ id: curStep, q: q.q.replace("[NAME]", playerName), h: q.hit });
         }
-        document.getElementById('fb-area').innerHTML = `<span style="color:#ff4b4b">✗ Detalhe incorreto, ${playerName}.</span><br><small style="color:#ff6b6b">${q.hit}</small>`;
+        document.getElementById('fb-area').innerHTML = `<span style="color:#ff4b4b">✗ Quase lá, ${playerName}...</span><br><small style="color:#ff6b6b">${q.hit}</small>`;
         btn.style.background = "#ff4b4b";
     }
 }
@@ -353,12 +423,11 @@ function handleNext() {
     curStep++;
     if(curStep < rawQuests.length) renderQ();
     else {
-        document.getElementById('quiz-screen').innerHTML = `<h2>JORNADA CONCLUÍDA: ${playerName} 🏆</h2><div style="background:#000; padding:15px; border-radius:10px; text-align:left; border:1px solid gold; max-height:250px; overflow-y:auto;">${stats.mistakes.map(m => `<p style='font-size:0.9rem'><b>QUESTÃO:</b> ${m.q}<br><b>EXPLICAÇÃO:</b> ${m.h}</p>`).join("") || "DOMÍNIO TOTAL! VOCÊ É UM ESPECIALISTA!"}</div><button class="opt-btn" style="margin-top:15px; width:250px; background:gold; color:black; font-weight:bold" onclick="location.reload()">REINICIAR JORNADA</button>`;
+        document.getElementById('quiz-screen').innerHTML = `<h2>RESULTADO FINAL: ${playerName} 🏆</h2><div style="background:#000; padding:15px; border-radius:10px; text-align:left; border:1px solid gold; max-height:250px; overflow-y:auto;">${stats.mistakes.map(m => `<p style='font-size:0.9rem'><b>QUESTÃO:</b> ${m.q}<br><b>EXPLICAÇÃO:</b> ${m.h}</p>`).join("") || "PARABÉNS! VOCÊ GABARITOU A SAGA!"}</div><button class="opt-btn" style="margin-top:15px; width:250px; background:gold; color:black; font-weight:bold" onclick="location.reload()">REINICIAR JORNADA</button>`;
         triggerExplosion();
     }
 }
 
-// ADICIONANDO SUPORTE A TECLADO PARA O SOKOBAN
 window.addEventListener("keydown", (e) => {
     if (document.getElementById('sokoban-screen').classList.contains('hidden')) return;
     if (e.key === "ArrowUp") moveP(0, -1);

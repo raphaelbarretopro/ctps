@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saga do Futuro: Proteção e Carreira - Firjan SENAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Orbitron:wght@400;700&family=Roboto:wght@300;400;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00d4ff; --bg: #050a10; --panel: rgba(10, 20, 30, 0.95); --text: #f0f0f0;
+            --img-prev: url('https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1600');
+            --img-eca: url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=1600');
+            --img-seg: url('https://images.unsplash.com/photo-1557597774-9d2739f85a94?auto=format&fit=crop&q=80&w=1600');
+            --img-plan: url('https://images.unsplash.com/photo-1454165833762-0204b287d1e7?auto=format&fit=crop&q=80&w=1600');
+        }
+
+        body.era-PREV { --primary: #27ae60; background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), var(--img-prev); } 
+        body.era-ECA { --primary: #e67e22; background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), var(--img-eca); }
+        body.era-SEG { --primary: #e74c3c; background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), var(--img-seg); }
+        body.era-PLAN { --primary: #9b59b6; background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), var(--img-plan); }
+
+        body { background-color: var(--bg); color: var(--text); font-family: 'Roboto', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: all 1s ease; overflow: hidden; background-size: cover; background-position: center; background-attachment: fixed; }
+        #game-container { width: 95%; max-width: 900px; background: var(--panel); padding: 30px; border-radius: 20px; border: 2px solid var(--primary); backdrop-filter: blur(10px); text-align: center; position: relative; z-index: 10; max-height: 95vh; overflow-y: auto; }
+        .hidden { display: none !important; }
+
+        /* ROLETA CUSTOMIZADA */
+        .wheel-container { position: relative; width: 300px; height: 300px; margin: 10px auto; border: 10px solid var(--primary); border-radius: 50%; box-shadow: 0 0 30px var(--primary); overflow: visible; }
+        .wheel-marker { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 35px solid #ff0000; z-index: 60; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden; transition: transform 0.8s cubic-bezier(0.2, 0, 0, 1); border: 2px solid #000; }
+        .wheel-seg { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Orbitron'; font-weight: bold; font-size: 0.7rem; }
+        .s1 { transform: rotate(0deg); background: #27ae60; } /* Previdência */
+        .s2 { transform: rotate(90deg); background: #e67e22; } /* ECA */
+        .s3 { transform: rotate(180deg); background: #e74c3c; } /* Segurança */
+        .s4 { transform: rotate(270deg); background: #9b59b6; } /* Planejamento */
+        .stext { position: absolute; transform: rotate(45deg); width: 100px; text-align: center; left: 35px; top: 60px; text-shadow: 2px 2px 4px #000; }
+        #center-year-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: #000; color: #fff; padding: 10px; border: 3px solid var(--primary); border-radius: 10px; font-family: 'Orbitron'; font-size: 1.5rem; z-index: 150; transition: transform 0.5s; }
+        .show-year { transform: translate(-50%, -50%) scale(1.2) !important; }
+
+        /* SOKOBAN */
+        #sokoban-grid { display: grid; grid-template-columns: repeat(9, 40px); grid-template-rows: repeat(9, 40px); gap: 2px; margin: 15px auto; width: 378px; background: #222; border: 4px solid var(--primary); }
+        .tile { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; }
+        .t-wall { background: #333; } .t-target { background: rgba(0, 212, 255, 0.2); border: 1px inset var(--primary); }
+        .t-box { background: var(--primary); color: #000; border-radius: 5px; font-family: 'Orbitron'; z-index: 5; font-size: 14px; }
+        .t-box-ok { background: #2ecc71 !important; color: white; }
+
+        /* DRAG AND DROP */
+        .drag-area { display: flex; flex-direction: column; gap: 10px; margin: 15px 0; }
+        .drag-pool { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; }
+        .drop-zones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; }
+        .drop-box { background: rgba(255,255,255,0.05); border: 1px dashed var(--primary); padding: 10px; border-radius: 8px; font-size: 0.9rem; }
+        .target-zone { background: rgba(255,255,255,0.1); border: 2px solid transparent; min-height: 45px; margin-top: 5px; border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+        .target-zone.over { border-color: #fff; background: rgba(0, 212, 255, 0.2); }
+        .target-zone.filled { background: #2ecc71; border-style: solid; }
+        .drag-card { background: var(--primary); color: #000; padding: 6px 10px; border-radius: 5px; cursor: grab; font-weight: bold; font-family: 'Orbitron'; font-size: 0.8rem; }
+
+        .opt-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--primary); color: white; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 8px; font-size: 1rem; }
+        .opt-btn:hover { background: var(--primary); color: #000; font-weight: bold; }
+        #p-name-input { padding: 15px; width: 80%; font-size: 2rem; text-align: center; border-radius: 10px; background: #000; color: #fff; border: 2px solid var(--primary); font-family: 'Orbitron'; }
+        
+        .firework { position: fixed; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; animation: explode 1s ease-out forwards; z-index: 9999; }
+        @keyframes explode { 0% { transform: scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(35); opacity: 0; } }
+    </style>
+</head>
+<body class="era-PREV">
+
+    <div id="game-container">
+        <div id="start-screen">
+            <h2 style="font-family: 'Cinzel'; color: var(--primary);">⚔️ SAGA DO FUTURO: PROTEÇÃO E CARREIRA ⚔️</h2>
+            <p>Domine seus direitos previdenciários e planeje seu sucesso profissional.</p>
+            <input type="text" id="p-name-input" placeholder="SEU NOME" autofocus>
+            <br><br>
+            <button class="opt-btn" style="width: 300px; background: var(--primary); color: #000; font-weight: bold;" onclick="startGame()">INICIAR JORNADA</button>
+        </div>
+
+        <div id="portal-screen" class="hidden">
+            <h2 id="portal-msg">O CÍCLO DO CONHECIMENTO</h2>
+            <div class="wheel-container">
+                <div class="wheel-marker"></div>
+                <div id="center-year-display"></div>
+                <div id="wheel">
+                    <div id="seg-PREV" class="wheel-seg s1"><span class="stext">PREVIDÊNCIA</span></div>
+                    <div id="seg-ECA" class="wheel-seg s2"><span class="stext">ECA / JOVEM</span></div>
+                    <div id="seg-SEG" class="wheel-seg s3"><span class="stext">SEGURANÇA</span></div>
+                    <div id="seg-PLAN" class="wheel-seg s4"><span class="stext">PROJETO VIDA</span></div>
+                </div>
+            </div>
+            <button id="spin-btn" class="opt-btn" onclick="startSpin()">GIRAR ROLETA</button>
+            <button id="stop-btn" class="opt-btn hidden" style="background: #ff0000;" onclick="stopSpin()">PARAR AGORA!</button>
+        </div>
+
+        <div id="sokoban-screen" class="hidden">
+            <h2 id="sokoban-title">📦 EMPURRE AS BASES DA ERA PARA PROSSEGUIR</h2>
+            <div id="sokoban-grid"></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <button class="opt-btn" style="width: 50px; margin:0;" onclick="moveP(0,-1)">↑</button>
+                <div style="display: flex; gap: 50px;">
+                    <button class="opt-btn" style="width: 50px; margin:0;" onclick="moveP(-1,0)">←</button>
+                    <button class="opt-btn" style="width: 50px; margin:0;" onclick="moveP(1,0)">→</button>
+                </div>
+                <button class="opt-btn" style="width: 50px; margin:0;" onclick="moveP(0,1)">↓</button>
+            </div>
+            <button class="opt-btn" style="width: auto; padding: 10px 40px; margin-top: 15px; background: #444;" onclick="resetSokoban()">Reiniciar</button>
+            <div id="history-modal" class="hidden" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; background: #111; border: 3px solid var(--primary); padding: 20px; z-index: 200; border-radius: 15px;">
+                <h2 id="hist-year" style="color:var(--primary)"></h2>
+                <p id="hist-text"></p>
+                <button class="opt-btn" style="background:var(--primary); color:#000" onclick="proceedToQuiz()">ENTENDIDO, AO QUIZ!</button>
+            </div>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div id="era-tag" style="background:var(--primary); color:#000; padding:4px 12px; border-radius:5px; font-weight:bold; margin-bottom:8px;"></div>
+            <p id="q-txt" style="font-size:1.3rem; margin-bottom:15px; font-weight:500;"></p>
+            
+            <div id="opts" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;"></div>
+            
+            <div id="drag-drop-container" class="drag-area hidden">
+                <div class="drag-pool" id="drag-pool"></div>
+                <div class="drop-zones" id="drop-zones"></div>
+            </div>
+
+            <div id="fb-area" style="margin-top:15px; font-weight:bold; font-size:1.1rem;"></div>
+            <button id="next-btn" class="opt-btn hidden" onclick="handleNext()">AVANÇAR ➔</button>
+        </div>
+    </div>
+
+<script>
+let curStep = 0, playerName = "", isReady = false, stats = { correct: 0, mistakes: [] };
+let rot = 0, spinTimer, dragsFixed = 0;
+
+const eraInfo = {
+    "PREV": "Previdência Social: Seguro social que garante renda ao trabalhador em situações como doença, acidente ou aposentadoria.",
+    "ECA": "ECA e Estatuto da Juventude: Proteções específicas para o desenvolvimento integral, profissionalização e direitos do jovem.",
+    "SEG": "Políticas de Segurança: Compreensão dos riscos sociais, segurança pública e prevenção baseada em dados (PNSP).",
+    "PLAN": "Projeto de Vida: Ferramentas de autoconhecimento, análise SWOT e planejamento para o sucesso profissional."
+};
+
+const rawQuests = [
+    // --- PREVIDÊNCIA (Questões 1-13) ---
+    { type: "multiple", era: "PREV", q: "[NAME], qual é o principal objetivo da Previdência Social no Brasil?", ans: ["Dar lucro ao governo", "Garantir renda ao contribuinte e família", "Pagar apenas lazer", "Substituir o salário integral sempre"], cor: "Garantir renda ao contribuinte e família", hit: "Funciona como um seguro para cobrir riscos como doença e velhice." },
+    { type: "boolean", era: "PREV", q: "A inscrição na Previdência Social para o Jovem Aprendiz é facultativa.", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "Por ter contrato de trabalho, o aprendizado gera filiação obrigatória como segurado empregado." },
+    { type: "drag", era: "PREV", q: "Relacione os benefícios do INSS:", items: [{id:"d1", txt:"Auxílio-Doença", match:"z1"}, {id:"d2", txt:"Pensão por Morte", match:"z2"}], zones: [{id:"z1", label:"Incapacidade temporária."}, {id:"z2", label:"Destinado aos dependentes."}], hit: "Cada benefício cobre um risco social específico." },
+    { type: "multiple", era: "PREV", q: "[NAME], o que é o Período de Carência no INSS?", ans: ["Tempo de férias", "Número mínimo de contribuições mensais", "Atraso no pagamento", "Idade mínima"], cor: "Número mínimo de contribuições mensais", hit: "É o 'pedágio' necessário para ter direito a certos benefícios." },
+    { type: "boolean", era: "PREV", q: "O Salário-Família é um benefício para trabalhadores de baixa renda com filhos até 14 anos.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Visa auxiliar no sustento dos dependentes de segurados com menor salário." },
+    { type: "multiple", era: "PREV", q: "Qual documento centraliza todo o histórico de contribuições do trabalhador?", ans: ["CPF", "CNIS", "PIS", "CTPS apenas"], cor: "CNIS", hit: "Cadastro Nacional de Informações Sociais é a base para cálculos do INSS." },
+    { type: "drag", era: "PREV", q: "Tipos de Aposentadoria:", items: [{id:"d3", txt:"Invalidez", match:"z3"}, {id:"d4", txt:"Idade", match:"z4"}], zones: [{id:"z3", label:"Incapacidade permanente."}, {id:"z4", label:"Tempo de vida e contribuição."}], hit: "A reforma de 2019 unificou critérios." },
+    { type: "boolean", era: "PREV", q: "O Auxílio-Acidente é pago mesmo se o trabalhador continuar trabalhando.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Tem natureza indenizatória quando há sequela que reduz a capacidade." },
+    { type: "multiple", era: "PREV", q: "Quem são considerados dependentes de 1ª classe?", ans: ["Irmãos", "Cônjuge e filhos menores", "Pais", "Avós"], cor: "Cônjuge e filhos menores", hit: "Estes têm dependência econômica presumida pela lei." },
+    { type: "boolean", era: "PREV", q: "[NAME], o desempregado mantém a qualidade de segurado por um tempo (Período de Graça).", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Permite manter direitos mesmo sem contribuir por alguns meses." },
+    { type: "drag", era: "PREV", q: "Relacione os conceitos:", items: [{id:"d5", txt:"Segurado", match:"z5"}, {id:"d6", txt:"Contribuinte", match:"z6"}], zones: [{id:"z5", label:"Quem está protegido."}, {id:"z6", label:"Quem paga a cota mensal."}], hit: "O sistema é contributivo e solidário." },
+    { type: "multiple", era: "PREV", q: "Qual o valor do Auxílio-Reclusão?", ans: ["3 salários", "Até 1 salário mínimo", "Valor variável ilimitado", "50% do salário"], cor: "Até 1 salário mínimo", hit: "Destinado aos dependentes do segurado de baixa renda preso." },
+    { type: "boolean", era: "PREV", q: "O BPC (LOAS) é um benefício previdenciário que exige contribuição.", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "O BPC é assistencial, pago a idosos ou PCDs pobres mesmo sem contribuição.", trans: "ECA" },
+
+    // --- ECA / JOVEM (Questões 14-25) ---
+    { type: "multiple", era: "ECA", q: "[NAME], a partir de que idade é permitido o trabalho como Aprendiz?", ans: ["12 anos", "14 anos", "16 anos", "18 anos"], cor: "14 anos", hit: "A CF/88 permite o trabalho a partir de 14 anos apenas como aprendiz." },
+    { type: "boolean", era: "ECA", q: "O ECA considera 'Criança' a pessoa até os 12 anos incompletos.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Adolescente é quem tem entre 12 e 18 anos." },
+    { type: "drag", era: "ECA", q: "Prioridades do Jovem:", items: [{id:"d7", txt:"Educação", match:"z7"}, {id:"d8", txt:"Profissionalização", match:"z8"}], zones: [{id:"z7", label:"Direito ao ensino regular."}, {id:"z8", label:"Preparação para o mercado."}], hit: "O ECA garante proteção integral ao desenvolvimento." },
+    { type: "multiple", era: "ECA", q: "Qual órgão zela pelo cumprimento dos direitos da criança e do adolescente no município?", ans: ["Polícia", "Conselho Tutelar", "Escola", "Prefeitura"], cor: "Conselho Tutelar", hit: "É um órgão autônomo e não jurisdicional." },
+    { type: "boolean", era: "ECA", q: "É permitido ao adolescente o trabalho noturno (após as 22h).", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "O trabalho do menor de 18 deve ser diurno, salubre e seguro." },
+    { type: "multiple", era: "ECA", q: "Segundo o Estatuto da Juventude, quem é considerado Jovem?", ans: ["14 a 18 anos", "15 a 29 anos", "18 a 21 anos", "12 a 18 anos"], cor: "15 a 29 anos", hit: "Abrange uma faixa maior que a do adolescente do ECA." },
+    { type: "drag", era: "ECA", q: "Direitos da Juventude:", items: [{id:"d9", txt:"Diversidade", match:"z9"}, {id:"d10", txt:"Território", match:"z10"}], zones: [{id:"z9", label:"Respeito à identidade."}, {id:"z10", label:"Uso do espaço público."}], hit: "O Estatuto foca na cidadania ativa." },
+    { type: "boolean", era: "ECA", q: "O Jovem Aprendiz tem direito a férias coincidindo com as escolares.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "É uma garantia para não prejudicar o desempenho acadêmico." },
+    { type: "multiple", era: "ECA", q: "[NAME], qual a carga horária máxima do aprendiz que já concluiu o ensino fundamental?", ans: ["4 horas", "6 horas", "8 horas", "10 horas"], cor: "6 horas", hit: "Pode chegar a 8h se incluída a parte teórica no mesmo dia." },
+    { type: "boolean", era: "ECA", q: "O Estatuto da Juventude prevê a ID Jovem para meia-entrada e transporte.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Focado em jovens de baixa renda." },
+    { type: "drag", era: "ECA", q: "Vedações ao Menor:", items: [{id:"d11", txt:"Insalubridade", match:"z11"}, {id:"d12", txt:"Periculosidade", match:"z12"}], zones: [{id:"z11", label:"Risco à saúde."}, {id:"z12", label:"Risco de vida/explosões."}], hit: "O trabalho do menor não pode ser penoso ou perigoso." },
+    { type: "multiple", era: "ECA", q: "O que deve prevalecer em qualquer decisão sobre menores?", ans: ["Vontade dos pais", "Melhor interesse da criança", "Economia da empresa", "Regras da escola"], cor: "Melhor interesse da criança", hit: "Princípio fundamental da Doutrina de Proteção Integral.", trans: "SEG" },
+
+    // --- SEGURANÇA (Questões 26-37) ---
+    { type: "multiple", era: "SEG", q: "[NAME], qual o foco principal do Plano Nacional de Segurança Pública (PNSP)?", ans: ["Prender todos", "Redução de homicídios e violência", "Apenas vigiar", "Vender armas"], cor: "Redução de homicídios e violência", hit: "Foca na preservação da vida e dignidade humana." },
+    { type: "boolean", era: "SEG", q: "A segurança pública é dever do Estado, mas responsabilidade de todos.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Art. 144 da Constituição Federal." },
+    { type: "drag", era: "SEG", q: "Fatores de Risco Social:", items: [{id:"d13", txt:"Desigualdade", match:"z13"}, {id:"d14", txt:"Exclusão", match:"z14"}], zones: [{id:"z13", label:"Diferença extrema de renda."}, {id:"z14", label:"Falta de acesso a direitos."}], hit: "A segurança envolve políticas sociais, não só polícia." },
+    { type: "multiple", era: "SEG", q: "Qual fator contribui para a 'Prevenção Primária' da violência?", ans: ["Mais viaturas", "Acesso à educação e esporte", "Câmeras de segurança", "Muros altos"], cor: "Acesso à educação e esporte", hit: "Ataca as causas raiz antes que o crime ocorra." },
+    { type: "boolean", era: "SEG", q: "O SUSP (Sistema Único de Segurança Pública) integra os órgãos de segurança.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Visa o compartilhamento de dados e operações coordenadas." },
+    { type: "multiple", era: "SEG", q: "A sensação de insegurança é influenciada por, [NAME]:", ans: ["Apenas fatos reais", "Mídia e desordem urbana", "Clima", "Sorte"], cor: "Mídia e desordem urbana", hit: "O ambiente influi no medo subjetivo da população." },
+    { type: "drag", era: "SEG", q: "Órgãos do SUSP:", items: [{id:"d15", txt:"Polícia Civil", match:"z15"}, {id:"d16", txt:"Polícia Militar", match:"z16"}], zones: [{id:"z15", label:"Judiciária e investigação."}, {id:"z16", label:"Ostensiva e preservação da ordem."}], hit: "Cada força tem seu papel constitucional." },
+    { type: "boolean", era: "SEG", q: "A participação cidadã é irrelevante nas políticas de segurança pública.", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "Conselhos de segurança (CONSEGs) aproximam a polícia da comunidade." },
+    { type: "multiple", era: "SEG", q: "Um dos eixos do PNSP é a valorização de quem?", ans: ["Políticos", "Profissionais de Segurança", "Empresários", "Turistas"], cor: "Profissionais de Segurança", hit: "Melhores condições de trabalho geram melhor serviço à sociedade." },
+    { type: "boolean", era: "SEG", q: "A segurança baseada em evidências usa dados e estatísticas para agir.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Menos 'achismo' e mais inteligência estratégica." },
+    { type: "drag", era: "SEG", q: "Segurança de TI no Jovem:", items: [{id:"d17", txt:"Antivírus", match:"z17"}, {id:"d18", txt:"Sempre desconfiar", match:"z18"}], zones: [{id:"z17", label:"Proteção de software."}, {id:"z18", label:"Prevenção contra Phishing."}], hit: "Segurança hoje também é digital." },
+    { type: "multiple", era: "SEG", q: "[NAME], qual o impacto da iluminação pública na segurança?", ans: ["Nenhum", "Reduz oportunidades de crimes", "Só serve para beleza", "Gasta energia atoa"], cor: "Reduz oportunidades de crimes", hit: "Espaços bem iluminados inibem a ação criminosa.", trans: "PLAN" },
+
+    // --- PROJETO DE VIDA (Questões 38-50) ---
+    { type: "multiple", era: "PLAN", q: "[NAME], qual o primeiro passo para um planejamento de carreira sólido?", ans: ["Comprar terno", "Autoconhecimento", "Pedir demissão", "Ter sorte"], cor: "Autoconhecimento", hit: "Saber quem você é e o que gosta é a base de tudo." },
+    { type: "boolean", era: "PLAN", q: "A análise SWOT (FOFA) analisa Forças, Oportunidades, Fraquezas e Ameaças.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Ferramenta essencial para planejar metas." },
+    { type: "drag", era: "PLAN", q: "Matriz SWOT:", items: [{id:"d19", txt:"Forças", match:"z19"}, {id:"d20", txt:"Ameaças", match:"z20"}], zones: [{id:"z19", label:"Fator interno positivo."}, {id:"z20", label:"Fator externo negativo."}], hit: "Ajuda a mapear o cenário profissional." },
+    { type: "multiple", era: "PLAN", q: "Metas 'SMART' devem ser, entre outros:", ans: ["Vagas", "Específicas e Mensuráveis", "Impossíveis", "Sigilosas"], cor: "Específicas e Mensuráveis", hit: "Facilita o acompanhamento e a realização." },
+    { type: "boolean", era: "PLAN", q: "Networking é apenas para pessoas experientes.", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "Rede de contatos começa desde o primeiro curso." },
+    { type: "multiple", era: "PLAN", q: "[NAME], o que define o 'Projeto de Vida'?", ans: ["Sorteio", "Conjunto de metas e valores para o futuro", "Ganhar na loteria", "Trabalhar 24h"], cor: "Conjunto de metas e valores para o futuro", hit: "Envolve as esferas pessoal, social e profissional." },
+    { type: "drag", era: "PLAN", q: "Habilidades:", items: [{id:"d21", txt:"Hard Skills", match:"z21"}, {id:"d22", txt:"Soft Skills", match:"z22"}], zones: [{id:"z21", label:"Conhecimento técnico (Ex: TI)."}, {id:"z22", label:"Comportamentais (Ex: Empatia)."}], hit: "Empresas buscam equilíbrio entre ambas." },
+    { type: "boolean", era: "PLAN", q: "O aprendizado contínuo (Lifelong Learning) é essencial hoje.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "O mundo muda rápido; o estudo nunca para." },
+    { type: "multiple", era: "PLAN", q: "Um plano de ação deve responder, principalmente:", ans: ["Quem sou eu?", "O que fazer e como fazer?", "Quanto vou ganhar?", "Onde vou morar?"], cor: "O que fazer e como fazer?", hit: "Transforma o sonho em passos concretos." },
+    { type: "boolean", era: "PLAN", q: "[NAME], o currículo deve ser igual para todas as vagas.", ans: ["Verdadeiro", "Falso"], cor: "Falso", hit: "Deve ser adaptado aos requisitos de cada oportunidade." },
+    { type: "drag", era: "PLAN", q: "Postura Profissional:", items: [{id:"d23", txt:"Pontualidade", match:"z23"}, {id:"d24", txt:"Ética", match:"z24"}], zones: [{id:"z23", label:"Respeito ao tempo."}, {id:"z24", label:"Respeito aos valores lícitos."}], hit: "Atitudes valem tanto quanto diplomas." },
+    { type: "multiple", era: "PLAN", q: "Qual a importância de metas a curto prazo?", ans: ["Nenhuma", "Gerar motivação e vitórias rápidas", "Apenas cansar", "Gastar tempo"], cor: "Gerar motivação e vitórias rápidas", hit: "Passos pequenos levam a grandes destinos." },
+    { type: "boolean", era: "PLAN", q: "Resiliência é a capacidade de lidar com problemas e adaptar-se.", ans: ["Verdadeiro", "Falso"], cor: "Verdadeiro", hit: "Habilidade vital para o mercado de trabalho atual." }
+];
+
+function triggerExplosion() {
+    for (let i = 0; i < 70; i++) {
+        const f = document.createElement('div'); f.className = 'firework';
+        f.style.left = '50vw'; f.style.top = '50vh';
+        f.style.setProperty('--tx', (Math.random() - 0.5) * window.innerWidth * 2 + 'px');
+        f.style.setProperty('--ty', (Math.random() - 0.5) * window.innerHeight * 2 + 'px');
+        f.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        document.body.appendChild(f);
+        setTimeout(() => f.remove(), 1000);
+    }
+}
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function startGame() {
+    playerName = document.getElementById('p-name-input').value.trim();
+    if (playerName.length < 3) return alert("Por favor, digite seu nome completo!");
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+    renderQ();
+}
+
+function startSpin() {
+    document.querySelectorAll('.wheel-seg').forEach(s => s.classList.remove('highlight-seg'));
+    document.getElementById('center-year-display').classList.remove('show-year');
+    document.getElementById('spin-btn').classList.add('hidden');
+    document.getElementById('stop-btn').classList.remove('hidden');
+    spinTimer = setInterval(() => { rot += 45; document.getElementById('wheel').style.transform = `rotate(${rot}deg)`; }, 40);
+}
+
+function stopSpin() {
+    clearInterval(spinTimer);
+    const target = rawQuests[curStep].trans;
+    let final = target === "ECA" ? 315 : target === "SEG" ? 225 : 135;
+    document.getElementById('wheel').style.transform = `rotate(${final + (360 * 5)}deg)`;
+    document.getElementById('stop-btn').innerText = "CALIBRANDO PORTAL...";
+    
+    setTimeout(() => {
+        const centerDisp = document.getElementById('center-year-display');
+        centerDisp.innerText = target;
+        centerDisp.classList.add('show-year');
+        triggerExplosion();
+        setTimeout(startSokoban, 2000);
+    }, 1000);
+}
+
+let sLevel = [[1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,1],[1,0,0,0,2,0,0,0,1],[1,0,0,0,2,0,0,0,1],[1,0,0,0,2,0,0,0,1],[1,0,0,0,2,0,0,0,1],[1,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1]];
+let sP = {x:4, y:7}, sB = [];
+
+function startSokoban() {
+    document.getElementById('portal-screen').classList.add('hidden');
+    document.getElementById('sokoban-screen').classList.remove('hidden');
+    document.getElementById('center-year-display').classList.remove('show-year');
+    resetSokoban();
+}
+
+function resetSokoban() {
+    const era = rawQuests[curStep].era.split("");
+    sP = {x:4, y:1};
+    sB = [{x:2, y:3, val: era[0]||"P"}, {x:6, y:3, val: era[1]||"R"}, {x:2, y:5, val: era[2]||"E"}, {x:6, y:5, val: era[3]||"V"}];
+    drawS();
+}
+
+function drawS() {
+    const grid = document.getElementById('sokoban-grid'); grid.innerHTML = "";
+    let completed = 0;
+    for(let y=0; y<9; y++){
+        for(let x=0; x<9; x++){
+            const t = document.createElement('div'); t.className = "tile";
+            if(sLevel[y][x] === 1) t.classList.add('t-wall');
+            if(sLevel[y][x] === 2) t.classList.add('t-target');
+            if(x === sP.x && y === sP.y) t.innerHTML = "👷";
+            sB.forEach(b => {
+                if(b.x === x && b.y === y) {
+                    t.classList.add('t-box'); t.innerText = b.val;
+                    if(sLevel[y][x] === 2) { t.classList.add('t-box-ok'); completed++; }
+                }
+            });
+            grid.appendChild(t);
+        }
+    }
+    if(completed === 4) { triggerExplosion(); showHistoryModal(rawQuests[curStep].era); }
+}
+
+function moveP(dx, dy) {
+    let nx = sP.x + dx, ny = sP.y + dy;
+    if(sLevel[ny][nx] === 1) return;
+    let bIdx = sB.findIndex(b => b.x === nx && b.y === ny);
+    if(bIdx !== -1) {
+        let bnx = nx + dx, bny = ny + dy;
+        if(sLevel[bny][bnx] === 1 || sB.some(b => b.x === bnx && b.y === bny)) return;
+        sB[bIdx].x = bnx; sB[bIdx].y = bny;
+    }
+    sP.x = nx; sP.y = ny; drawS();
+}
+
+function showHistoryModal(era) {
+    document.getElementById('hist-year').innerText = "ERA: " + era;
+    document.getElementById('hist-text').innerText = eraInfo[era];
+    document.getElementById('history-modal').classList.remove('hidden');
+}
+
+function proceedToQuiz() {
+    document.getElementById('history-modal').classList.add('hidden');
+    document.getElementById('sokoban-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+    isReady = true; renderQ();
+}
+
+function renderQ() {
+    const q = rawQuests[curStep];
+    const optsBox = document.getElementById('opts');
+    const ddBox = document.getElementById('drag-drop-container');
+    const fbArea = document.getElementById('fb-area');
+    const nextBtn = document.getElementById('next-btn');
+
+    optsBox.innerHTML = ""; ddBox.innerHTML = "";
+    ddBox.classList.add('hidden'); optsBox.classList.remove('hidden');
+    fbArea.innerText = ""; nextBtn.classList.add('hidden');
+
+    if (q.trans && !isReady) {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('portal-screen').classList.remove('hidden');
+        document.getElementById('spin-btn').classList.remove('hidden');
+        document.getElementById('stop-btn').classList.add('hidden');
+        return;
+    }
+
+    document.body.className = `era-${q.era}`;
+    document.getElementById('era-tag').innerText = `MODALIDADE: ${q.era}`;
+    document.getElementById('q-txt').innerText = q.q.replace("[NAME]", playerName);
+    
+    if (q.type === "drag") {
+        optsBox.classList.add('hidden');
+        ddBox.classList.remove('hidden');
+        renderDrag(q);
+    } else {
+        const shuffledAns = (q.type === "boolean") ? q.ans : shuffle([...q.ans]);
+        shuffledAns.forEach((a) => {
+            const b = document.createElement('button');
+            b.className = "opt-btn";
+            b.innerText = a;
+            b.onclick = () => check(a, q.cor, b);
+            optsBox.appendChild(b);
+        });
+    }
+    isReady = false;
+}
+
+function renderDrag(q) {
+    const ddBox = document.getElementById('drag-drop-container');
+    ddBox.innerHTML = `<div class="drag-pool" id="drag-pool"></div><div class="drop-zones" id="drop-zones"></div>`;
+    const pool = document.getElementById('drag-pool');
+    const zones = document.getElementById('drop-zones');
+    dragsFixed = 0;
+
+    q.items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "drag-card";
+        div.innerText = item.txt;
+        div.draggable = true;
+        div.id = item.id;
+        div.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+        pool.appendChild(div);
+    });
+
+    q.zones.forEach(z => {
+        const box = document.createElement('div');
+        box.className = "drop-box";
+        box.innerHTML = `<span>${z.label}</span><div class="target-zone" data-match="${z.id}"></div>`;
+        zones.appendChild(box);
+    });
+
+    document.querySelectorAll('.target-zone').forEach(zone => {
+        zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('over'); };
+        zone.ondragleave = () => zone.classList.remove('over');
+        zone.ondrop = (e) => {
+            e.preventDefault(); zone.classList.remove('over');
+            const draggedId = e.dataTransfer.getData("text");
+            const item = q.items.find(i => i.id === draggedId);
+            if (item.match === zone.dataset.match) {
+                zone.appendChild(document.getElementById(draggedId));
+                zone.classList.add('filled');
+                dragsFixed++;
+                if (dragsFixed === q.items.length) {
+                    stats.correct++;
+                    document.getElementById('fb-area').innerHTML = `<span style="color:#2ecc71">✓ Ótimas conexões!</span><br><small>${q.hit}</small>`;
+                    document.getElementById('next-btn').classList.remove('hidden');
+                    triggerExplosion();
+                }
+            } else { alert("Definição incorreta!"); }
+        };
+    });
+}
+
+function check(selected, correct, btn) {
+    const q = rawQuests[curStep];
+    if(selected === correct) {
+        stats.correct++;
+        document.getElementById('fb-area').innerHTML = `<span style="color:#2ecc71">✓ Excelente análise, ${playerName}!</span><br><small style="color:#ccc">${q.hit}</small>`;
+        btn.style.background = "#2ecc71";
+        document.getElementById('next-btn').classList.remove('hidden');
+    } else {
+        if(!stats.mistakes.find(m => m.id === curStep)) {
+            stats.mistakes.push({ id: curStep, q: q.q.replace("[NAME]", playerName), h: q.hit });
+        }
+        document.getElementById('fb-area').innerHTML = `<span style="color:#ff4b4b">✗ Foco nos detalhes, ${playerName}...</span><br><small style="color:#ff6b6b">${q.hit}</small>`;
+        btn.style.background = "#ff4b4b";
+    }
+}
+
+function handleNext() {
+    curStep++;
+    if(curStep < rawQuests.length) renderQ();
+    else {
+        document.getElementById('quiz-screen').innerHTML = `<h2>JORNADA CONCLUÍDA: ${playerName} 🏆</h2><div style="background:#000; padding:15px; border-radius:10px; text-align:left; border:1px solid gold; max-height:250px; overflow-y:auto;">${stats.mistakes.map(m => `<p style='font-size:0.9rem'><b>QUESTÃO:</b> ${m.q}<br><b>EXPLICAÇÃO:</b> ${m.h}</p>`).join("") || "VOCÊ É UM ESPECIALISTA EM DIREITOS E PLANEJAMENTO!"}</div><button class="opt-btn" style="margin-top:15px; width:250px; background:gold; color:black; font-weight:bold" onclick="location.reload()">REINICIAR</button>`;
+        triggerExplosion();
+    }
+}
+
+window.addEventListener("keydown", (e) => {
+    if (document.getElementById('sokoban-screen').classList.contains('hidden')) return;
+    if (e.key === "ArrowUp") moveP(0, -1);
+    if (e.key === "ArrowDown") moveP(0, 1);
+    if (e.key === "ArrowLeft") moveP(-1, 0);
+    if (e.key === "ArrowRight") moveP(1, 0);
+});
+</script>
+</body>
+</html>
