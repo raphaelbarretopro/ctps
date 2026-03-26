@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saga Trabalhista: 50 Desafios - Firjan SENAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Orbitron:wght@400;700&family=Roboto:wght@300;400;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d4af37; --bg: #0a0a0c; --panel: rgba(22, 22, 26, 0.95); --text: #f0f0f0;
+            --img-1943: url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1600');
+            --img-1966: url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=1600');
+            --img-1988: url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=1600');
+            --img-2017: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1600');
+        }
+
+        body.era-1943 { --primary: #8b4513; background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), var(--img-1943); } 
+        body.era-1966 { --primary: #2e8b57; background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), var(--img-1966); }
+        body.era-1988 { --primary: #c9a063; background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), var(--img-1988); }
+        body.era-2017 { --primary: #00e6ff; background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), var(--img-2017); }
+
+        body { background-color: #000; color: var(--text); font-family: 'Roboto', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: all 1s ease; overflow: hidden; background-size: cover; background-position: center; background-attachment: fixed; }
+        #game-container { width: 95%; max-width: 900px; background: var(--panel); padding: 30px; border-radius: 20px; border: 2px solid var(--primary); backdrop-filter: blur(10px); text-align: center; position: relative; z-index: 10; }
+        .hidden { display: none !important; }
+
+        /* ROLETA */
+        .wheel-container { position: relative; width: 300px; height: 300px; margin: 10px auto; border: 10px solid var(--primary); border-radius: 50%; box-shadow: 0 0 30px var(--primary); overflow: visible; }
+        .wheel-marker { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 35px solid #ff0000; z-index: 60; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden; transition: transform 0.8s cubic-bezier(0.2, 0, 0, 1); border: 2px solid #000; }
+        .wheel-seg { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Orbitron'; font-weight: bold; transition: all 0.5s ease; }
+        .s1 { transform: rotate(0deg); background: #8b4513; }
+        .s2 { transform: rotate(90deg); background: #2e8b57; }
+        .s3 { transform: rotate(180deg); background: #c9a063; }
+        .s4 { transform: rotate(270deg); background: #004a8d; }
+        .stext { position: absolute; transform: rotate(45deg); width: 120px; text-align: center; left: 25px; top: 55px; font-size: 1.2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        #center-year-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: #000; color: #fff; padding: 10px 20px; border: 3px solid var(--primary); border-radius: 10px; font-family: 'Orbitron'; font-size: 3.5rem; z-index: 150; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; box-shadow: 0 0 40px rgba(0,0,0,1); }
+        .show-year { transform: translate(-50%, -50%) scale(1.2) !important; }
+        .highlight-seg { transform: rotate(var(--rot)) scale(1.4) !important; z-index: 100; box-shadow: inset 0 0 50px white; border: 1px solid white; }
+
+        /* FOGOS */
+        .firework { position: fixed; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; animation: explode 1s ease-out forwards; z-index: 9999; }
+        @keyframes explode { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(35); opacity: 0; } }
+
+        /* SOKOBAN */
+        #sokoban-grid { display: grid; grid-template-columns: repeat(9, 40px); grid-template-rows: repeat(9, 40px); gap: 2px; margin: 15px auto; width: 378px; background: #222; border: 4px solid var(--primary); }
+        .tile { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; }
+        .t-wall { background: #444; }
+        .t-target { background: rgba(39, 174, 96, 0.4); border: 1px inset #27ae60; }
+        .t-box { background: var(--primary); color: #000; border: 2px solid #fff; border-radius: 5px; font-family: 'Orbitron'; z-index: 5; }
+        .t-box-ok { background: #27ae60 !important; color: white; }
+
+        .opt-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--primary); color: white; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 8px; font-size: 1rem; }
+        .opt-btn:hover { background: var(--primary); color: #000; font-weight: bold; }
+        #p-name-input { padding: 15px; width: 80%; font-size: 2rem; text-align: center; border-radius: 10px; background: #000; color: #fff; border: 2px solid var(--primary); font-family: 'Orbitron'; }
+        #history-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; background: #111; border: 3px solid var(--primary); padding: 20px; z-index: 200; border-radius: 15px; box-shadow: 0 0 100px #000; }
+    </style>
+</head>
+<body class="era-1943">
+
+    <div id="game-container">
+        <div id="start-screen">
+            <h2 style="font-family: 'Cinzel'; color: var(--primary);">⚔️ SAGA TRABALHISTA: 50 DESAFIOS ⚔️</h2>
+            <p>Seja bem-vindo! Digite seu nome para iniciar a jornada histórica.</p>
+            <input type="text" id="p-name-input" placeholder="NOME DO ALUNO" autofocus>
+            <br><br>
+            <button class="opt-btn" style="width: 300px; background: var(--primary); color: #000; font-weight: bold;" onclick="startGame()">INICIAR JORNADA</button>
+        </div>
+
+        <div id="portal-screen" class="hidden">
+            <h2 id="portal-msg">A ROLETA DO DESTINO</h2>
+            <div class="wheel-container">
+                <div class="wheel-marker"></div>
+                <div id="center-year-display"></div>
+                <div id="wheel">
+                    <div id="seg-1943" class="wheel-seg s1" style="--rot:0deg"><span class="stext">1943</span></div>
+                    <div id="seg-1966" class="wheel-seg s2" style="--rot:90deg"><span class="stext">1966</span></div>
+                    <div id="seg-1988" class="wheel-seg s3" style="--rot:180deg"><span class="stext">1988</span></div>
+                    <div id="seg-2017" class="wheel-seg s4" style="--rot:270deg"><span class="stext">2017</span></div>
+                </div>
+            </div>
+            <button id="spin-btn" class="opt-btn" onclick="startSpin()">GIRAR ROLETA</button>
+            <button id="stop-btn" class="opt-btn hidden" style="background: #ff0000;" onclick="stopSpin()">PARAR AGORA!</button>
+        </div>
+
+        <div id="sokoban-screen" class="hidden">
+            <h2 id="sokoban-title">📦TRABALHADOR EMPURRE OS BLOCOS E MONTE O ANO DA ERA</h2>
+            <div id="sokoban-grid"></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <button class="opt-btn" style="width: 50px; margin:0;" onclick="moveP(0,-1)">↑</button>
+                <div style="display: flex; gap: 50px;">
+                    <button class="opt-btn" style="width: 50px; margin:0;" onclick="moveP(-1,0)">←</button>
+                    <button class="opt-btn" style="width: 50px; margin:0;" onclick="moveP(1,0)">→</button>
+                </div>
+                <button class="opt-btn" style="width: 50px; margin:0;" onclick="moveP(0,1)">↓</button>
+            </div>
+            <button class="opt-btn" style="width: auto; padding: 10px 40px; margin-top: 15px; background: #444;" onclick="resetSokoban()">Reiniciar</button>
+            
+            <div id="history-modal" class="hidden">
+                <h2 id="hist-year" style="color:var(--primary)"></h2>
+                <p id="hist-text" style="font-size:1rem; line-height:1.4; text-align:justify;"></p>
+                <button class="opt-btn" style="background:var(--primary); color:#000" onclick="proceedToQuiz()">ENTENDIDO, AO QUIZ!</button>
+            </div>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div id="era-tag" style="background:var(--primary); color:#000; padding:4px 12px; border-radius:5px; font-weight:bold; margin-bottom:8px;"></div>
+            <p id="q-txt" style="font-size:1.4rem; margin-bottom:15px; font-weight:500;"></p>
+            <div id="opts" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;"></div>
+            <div id="fb-area" style="margin-top:15px; font-weight:bold; font-size:1.1rem;"></div>
+            <button id="next-btn" class="opt-btn hidden" onclick="handleNext()">AVANÇAR ➔</button>
+        </div>
+    </div>
+
+<script>
+let curStep = 0, playerName = "", isReady = false, stats = { correct: 0, mistakes: [] };
+let rot = 0, spinTimer;
+
+const eraInfo = {
+    "1943": "Consolidação (CLT): Getúlio Vargas unifica as leis, garantindo Salário Mínimo e Proteção ao Trabalhador.",
+    "1966": "Garantia (FGTS): Criado para substituir a estabilidade antiga, permitindo o uso do fundo para moradia e proteção na demissão.",
+    "1988": "Cidadania (CF/88): Ampliação de direitos como Jornada de 44h, 1/3 de férias, Licença Maternidade e Seguro-Desemprego.",
+    "2017": "Modernização (Reforma): Regulamentação do Teletrabalho e prevalência do negociado sobre o legislado em diversos pontos."
+};
+
+const rawQuests = [
+    // 1943 (15 QUESTÕES)
+    { era: "1943", q: "[NAME], qual lei Getúlio Vargas criou em 1943 para unificar a proteção ao trabalhador?", ans: ["CF/88", "CLT", "Lei de Greve", "Código Civil"], cor: "CLT", hit: "A CLT (Consolidação das Leis do Trabalho) foi o marco de Vargas em 1943." },
+    { era: "1943", q: "[NAME], qual requisito exige que o serviço seja feito por VOCÊ, sem substituto?", ans: ["Onerosidade", "Pessoalidade", "Subordinação", "Habitualidade"], cor: "Pessoalidade", hit: "Pessoalidade significa que o contrato é 'intuitu personae' (com a pessoa)." },
+    { era: "1943", q: "[NAME], se você recebe salário em troca do seu esforço, qual requisito está presente?", ans: ["Onerosidade", "Gratuidade", "Amizade", "Parceria"], cor: "Onerosidade", hit: "Onerosidade refere-se à contraprestação financeira (salário)." },
+    { era: "1943", q: "Ao seguir as ordens do seu patrão, [NAME], você está sob o regime de:", ans: ["Liberdade", "Subordinação", "Chefia", "Independência"], cor: "Subordinação", hit: "Subordinação é o estado de dependência das ordens do empregador." },
+    { era: "1943", q: "[NAME], o trabalho que ocorre com rotina, frequência e expectativa de retorno é:", ans: ["Eventual", "Habitual", "Único", "Invisível"], cor: "Habitual", hit: "Habitualidade (ou não eventualidade) é a rotina de trabalho." },
+    { era: "1943", q: "Quem deve assumir os riscos financeiros da atividade econômica, [NAME]?", ans: ["O Aluno", "O Empregador", "O Empregado", "O Sindicato"], cor: "O Empregador", hit: "O Princípio da Alteridade diz que o risco é sempre do empregador." },
+    { era: "1943", q: "[NAME], o contrato de trabalho é tecnicamente um acordo entre:", ans: ["Amigos", "Empregado e Empregador", "Empresa e Estado", "Vizinhos"], cor: "Empregado e Empregador", hit: "É a relação jurídica bilateral entre patrão e funcionário." },
+    { era: "1943", q: "[NAME], em qual documento oficial o contrato deve ser obrigatoriamente registrado?", ans: ["RG", "CTPS", "CPF", "CNH"], cor: "CTPS", hit: "A Carteira de Trabalho e Previdência Social é o registro oficial." },
+    { era: "1943", q: "[NAME], qual presidente assinou a criação da CLT no estádio de São Januário?", ans: ["JK", "Getúlio Vargas", "Lula", "Sarney"], cor: "Getúlio Vargas", hit: "Foi Getúlio Vargas, o 'Pai dos Pobres', em 1º de Maio de 1943." },
+    { era: "1943", q: "[NAME], o empregado é considerado a parte mais fraca do contrato, ou seja:", ans: ["Forte", "Hipossuficiente", "Rico", "Autônomo"], cor: "Hipossuficiente", hit: "O trabalhador é hipossuficiente e por isso a lei o protege mais." },
+    { era: "1943", q: "Diga, [NAME]: o trabalho voluntário possui o requisito da Onerosidade?", ans: ["Sim", "Não", "Talvez", "Sempre"], cor: "Não", hit: "O trabalho voluntário é gratuito, não possui intenção de ganhar salário." },
+    { era: "1943", q: "[NAME], a pessoa física que presta serviço habitual e subordinado é o:", ans: ["Patrão", "Empregado", "Empresa", "Sócio"], cor: "Empregado", hit: "Este é o conceito do Art. 3º da CLT." },
+    { era: "1943", q: "[NAME], a Pessoalidade impede que você envie seu primo trabalhar no seu lugar?", ans: ["Não", "Sim", "Às vezes", "Só no feriado"], cor: "Sim", hit: "Sim, pois a empresa contratou você especificamente." },
+    { era: "1943", q: "[NAME], o empregador pode ser uma pessoa física ou uma empresa (jurídica)?", ans: ["Só física", "Ambas", "Só jurídica", "Nenhuma"], cor: "Ambas", hit: "Pode ser tanto uma empresa quanto um patrão pessoa física (ex: doméstico)." },
+    { era: "1943", q: "[NAME], quantos requisitos (elementos) definem o vínculo de emprego?", ans: ["3", "5", "10", "1"], cor: "5", hit: "São 5: Pessoa Física, Habitualidade, Onerosidade, Subordinação e Pessoalidade." },
+
+    // 1966 (10 QUESTÕES)
+    { era: "1966", q: "Bem-vindo a 1966, [NAME]! O que significa a sigla FGTS?", ans: ["Fundo de Garantia", "Fundo de Gastos", "Folha Geral", "Fundo do Governo"], cor: "Fundo de Garantia", hit: "Significa Fundo de Garantia do Tempo de Serviço.", trans: "1966" },
+    { era: "1966", q: "[NAME], qual o percentual padrão depositado mensalmente no FGTS?", ans: ["2%", "8%", "11%", "20%"], cor: "8%", hit: "O empregador deposita mensalmente 8% do salário bruto." },
+    { era: "1966", q: "[NAME], quem tem a obrigação legal de depositar o FGTS na sua conta?", ans: ["O Empregado", "O Empregador", "O Banco", "O Aluno"], cor: "O Empregador", hit: "O FGTS é um encargo do patrão, nunca descontado do trabalhador." },
+    { era: "1966", q: "[NAME], o valor do FGTS pode ser descontado do seu salário?", ans: ["Sim", "Não", "Metade", "Só com aviso"], cor: "Não", hit: "É proibido descontar o FGTS do salário do empregado." },
+    { era: "1966", q: "[NAME], qual a multa sobre o FGTS na demissão sem justa causa?", ans: ["10%", "20%", "40%", "50%"], cor: "40%", hit: "A indenização compensatória é de 40% sobre o saldo depositado." },
+    { era: "1966", q: "[NAME], qual é o banco oficial gestor das contas do FGTS?", ans: ["Itaú", "Caixa Econômica", "Nubank", "Banco do Brasil"], cor: "Caixa Econômica", hit: "A Caixa Econômica Federal é a operadora oficial do fundo." },
+    { era: "1966", q: "[NAME], você pode usar o seu FGTS para qual finalidade abaixo?", ans: ["Comprar pão", "Comprar casa própria", "Pagar Netflix", "Viagem"], cor: "Comprar casa própria", hit: "O FGTS pode ser usado para moradia, doenças graves ou aposentadoria." },
+    { era: "1966", q: "Como Jovem Aprendiz da Firjan, [NAME], o seu FGTS é de quanto?", ans: ["8%", "2%", "5%", "0%"], cor: "2%", hit: "Aprendizes têm alíquota reduzida de 2% de FGTS." },
+    { era: "1966", q: "[NAME], o depósito do FGTS deve ser feito mensalmente até qual dia?", ans: ["Dia 1", "Dia 20", "Dia 5", "Dia 30"], cor: "Dia 20", hit: "Com o FGTS Digital, o prazo mudou para o dia 20 de cada mês." },
+    { era: "1966", q: "[NAME], a multa de 40% é calculada sobre qual base?", ans: ["Último salário", "Saldo total depositado", "Idade do aluno", "Tempo de casa"], cor: "Saldo total depositado", hit: "Calcula-se sobre todos os depósitos feitos durante o contrato." },
+
+    // 1988 (15 QUESTÕES)
+    { era: "1988", q: "[NAME], qual a jornada semanal máxima fixada pela CF/88?", ans: ["40h", "44h", "48h", "30h"], cor: "44h", hit: "A Constituição de 1988 reduziu o limite para 44 horas semanais.", trans: "1988" },
+    { era: "1988", q: "[NAME], qual o adicional mínimo garantido para a hora extra?", ans: ["20%", "50%", "100%", "10%"], cor: "50%", hit: "A CF/88 garante no mínimo 50% de adicional sobre a hora normal." },
+    { era: "1988", q: "Ao sair de férias, [NAME], qual adicional você recebe obrigatoriamente?", ans: ["1/2 salário", "1/3 salário", "Dobro", "Zero"], cor: "1/3 salário", hit: "É o 'terço constitucional', 33,3% a mais no valor das férias." },
+    { era: "1988", q: "[NAME], qual é o período padrão da licença maternidade?", ans: ["90 dias", "120 dias", "180 dias", "60 dias"], cor: "120 dias", hit: "A Constituição assegura 120 dias de licença remunerada." },
+    { era: "1988", q: "[NAME], o Seguro Desemprego é pago em qual modalidade de saída?", ans: ["Com Justa Causa", "Sem Justa Causa", "Pedido", "Acordo"], cor: "Sem Justa Causa", hit: "O seguro é para quem foi demitido involuntariamente e sem justa causa." },
+    { era: "1988", q: "[NAME], qual a idade mínima para o trabalho no Brasil (exceto aprendiz)?", ans: ["14 anos", "16 anos", "18 anos", "12 anos"], cor: "16 anos", hit: "A regra é 16 anos, salvo aprendizagem a partir dos 14." },
+    { era: "1988", q: "[NAME], o Descanso Semanal Remunerado (DSR) deve ser preferencialmente aos:", ans: ["Sábados", "Domingos", "Feriados", "Segundas"], cor: "Domingos", hit: "A lei protege o descanso preferencial aos domingos." },
+    { era: "1988", q: "[NAME], o adicional noturno urbano mínimo é de quanto?", ans: ["10%", "20%", "30%", "50%"], cor: "20%", hit: "No meio urbano, o adicional noturno é de no mínimo 20%." },
+    { era: "1988", q: "[NAME], a hora noturna urbana tem duração de quanto tempo?", ans: ["60 min", "52 min e 30 seg", "45 min", "1 hora"], cor: "52 min e 30 seg", hit: "A hora noturna é ficção jurídica: dura menos que a hora relógio." },
+    { era: "1988", q: "[NAME], qual a duração mínima da licença paternidade?", ans: ["1 dia", "5 dias", "30 dias", "15 dias"], cor: "5 dias", hit: "A Constituição de 88 fixou o prazo mínimo de 5 dias corridos." },
+    { era: "1988", q: "[NAME], em jornadas acima de 6h, qual o intervalo mínimo para almoço?", ans: ["15 min", "1 hora", "30 min", "2 horas"], cor: "1 hora", hit: "O intervalo intrajornada deve ser de 1h a 2h." },
+    { era: "1988", q: "[NAME], entre um dia de trabalho e outro, deve haver um descanso de:", ans: ["8 horas", "11 horas", "24 horas", "12 horas"], cor: "11 horas", hit: "É o descanso interjornada mínimo de 11 horas consecutivas." },
+    { era: "1988", q: "[NAME], após 1 ano trabalhado, você ganha o direito a quantos dias de férias?", ans: ["15 dias", "30 dias", "20 dias", "45 dias"], cor: "30 dias", hit: "São 30 dias após o período aquisitivo de 12 meses." },
+    { era: "1988", q: "[NAME], o 13º salário é calculado baseado em quê?", ans: ["Idade", "Meses trabalhados no ano", "Peso", "Altura"], cor: "Meses trabalhados no ano", hit: "Recebe-se 1/12 por mês trabalhado (ou fração superior a 14 dias)." },
+    { era: "1988", q: "[NAME], o aviso prévio mínimo para quem sai da empresa é de:", ans: ["15 dias", "30 dias", "7 dias", "60 dias"], cor: "30 dias", hit: "O aviso mínimo garantido é de 30 dias." },
+
+    // 2017 (10 QUESTÕES)
+    { era: "2017", q: "[NAME], como se chama o trabalho remoto regulamentado em 2017?", ans: ["Teletrabalho", "Freelance", "Bico", "Externo"], cor: "Teletrabalho", hit: "A Reforma Trabalhista inseriu o capítulo sobre Teletrabalho.", trans: "2017" },
+    { era: "2017", q: "[NAME], na demissão por Comum Acordo, você pode sacar quanto do FGTS?", ans: ["100%", "80%", "50%", "20%"], cor: "80%", hit: "No acordo mútuo, o trabalhador movimenta 80% do fundo." },
+    { era: "2017", q: "[NAME], onde você consulta sua Carteira de Trabalho nos dias de hoje?", ans: ["No Livro Azul", "No App CTPS Digital", "No Sindicato", "No RH"], cor: "No App CTPS Digital", hit: "A Carteira Digital substituiu o documento físico de papel." },
+    { era: "2017", q: "[NAME], reduzir o almoço para 30 minutos é possível hoje?", ans: ["Não", "Sim (com acordo coletivo)", "Só se o patrão quiser", "Nunca"], cor: "Sim (com acordo coletivo)", hit: "Sim, via negociação coletiva pode-se reduzir para até 30min." },
+    { era: "2017", q: "[NAME], como se chama o trabalho onde você só recebe pelas horas convocado?", ans: ["Intermitente", "Fixo", "Estágio", "Diarista"], cor: "Intermitente", hit: "O contrato intermitente alterna períodos de serviço e inatividade." },
+    { era: "2017", q: "[NAME], uma falta muito grave (como roubo) gera demissão por:", ans: ["Acordo", "Justa Causa", "Pedido", "Sorteio"], cor: "Justa Causa", hit: "Justa causa é a punição máxima prevista no Art. 482 da CLT." },
+    { era: "2017", q: "[NAME], a Reforma permitiu parcelar as férias em até quantos períodos?", ans: ["2 vezes", "3 vezes", "Não pode", "5 vezes"], cor: "3 vezes", hit: "Pode ser em 3 vezes, sendo um período maior que 14 dias." },
+    { era: "2017", q: "[NAME], o termo 'Acordado sobre o Legislado' significa que:", ans: ["A lei é absoluta", "O acordo pode valer mais que a lei", "A lei acabou", "Nada mudou"], cor: "O acordo pode valer mais que a lei", hit: "Convenções coletivas agora têm força de lei em pontos específicos." },
+    { era: "2017", q: "[NAME], a multa do FGTS no Comum Acordo cai para quanto?", ans: ["40%", "20%", "10%", "0%"], cor: "20%", hit: "A multa rescisória no acordo cai de 40% para 20%." },
+    { era: "2017", q: "[NAME], a Contribuição Sindical anual hoje é:", ans: ["Obrigatória", "Facultativa (você escolhe)", "Proibida", "Mais cara"], cor: "Facultativa (você escolhe)", hit: "A reforma tornou o desconto sindical opcional para o trabalhador." }
+];
+
+function triggerExplosion() {
+    for (let i = 0; i < 70; i++) {
+        const f = document.createElement('div'); f.className = 'firework';
+        f.style.left = '50vw'; f.style.top = '50vh';
+        f.style.setProperty('--tx', (Math.random() - 0.5) * window.innerWidth * 2 + 'px');
+        f.style.setProperty('--ty', (Math.random() - 0.5) * window.innerHeight * 2 + 'px');
+        f.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        document.body.appendChild(f);
+        setTimeout(() => f.remove(), 1000);
+    }
+}
+
+// Algoritmo de Embaralhamento Fisher-Yates
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function startGame() {
+    playerName = document.getElementById('p-name-input').value.trim();
+    if (playerName.length < 3) return alert("Por favor, digite seu nome completo!");
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+    renderQ();
+}
+
+function startSpin() {
+    document.querySelectorAll('.wheel-seg').forEach(s => s.classList.remove('highlight-seg'));
+    document.getElementById('center-year-display').classList.remove('show-year');
+    document.getElementById('spin-btn').classList.add('hidden');
+    document.getElementById('stop-btn').classList.remove('hidden');
+    spinTimer = setInterval(() => { rot += 45; document.getElementById('wheel').style.transform = `rotate(${rot}deg)`; }, 40);
+}
+
+function stopSpin() {
+    clearInterval(spinTimer);
+    const target = rawQuests[curStep].trans;
+    let final;
+    if(target === "1966") final = 315; if(target === "1988") final = 225; if(target === "2017") final = 135;
+    document.getElementById('wheel').style.transform = `rotate(${final + (360 * 5)}deg)`;
+    document.getElementById('stop-btn').innerText = "ABRINDO PORTAL...";
+    
+    setTimeout(() => {
+        const centerDisp = document.getElementById('center-year-display');
+        centerDisp.innerText = target;
+        centerDisp.classList.add('show-year');
+        document.getElementById(`seg-${target}`).classList.add('highlight-seg');
+        triggerExplosion();
+        let timeLeft = 5;
+        const countdown = setInterval(() => {
+            document.getElementById('stop-btn').innerText = `INICIANDO EM ${timeLeft}...`;
+            if(timeLeft-- <= 0) { clearInterval(countdown); centerDisp.classList.remove('show-year'); startSokoban(); }
+        }, 1000);
+    }, 1000);
+}
+
+let sLevel = [[1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,1],[1,0,0,0,2,0,0,0,1],[1,0,0,0,2,0,0,0,1],[1,0,0,0,2,0,0,0,1],[1,0,0,0,2,0,0,0,1],[1,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1]];
+let sP = {x:4, y:7}, sB = [];
+
+function startSokoban() {
+    document.getElementById('portal-screen').classList.add('hidden');
+    document.getElementById('sokoban-screen').classList.remove('hidden');
+    document.getElementById('stop-btn').classList.add('hidden');
+    resetSokoban();
+}
+
+function resetSokoban() {
+    const digits = (rawQuests[curStep].trans || "1943").split("");
+    sP = {x:4, y:1};
+    sB = [{x:2, y:3, val: digits[0]}, {x:6, y:3, val: digits[1]}, {x:2, y:5, val: digits[2]}, {x:6, y:5, val: digits[3]}];
+    drawS();
+}
+
+function drawS() {
+    const grid = document.getElementById('sokoban-grid'); grid.innerHTML = "";
+    let completed = 0;
+    for(let y=0; y<9; y++){
+        for(let x=0; x<9; x++){
+            const t = document.createElement('div'); t.className = "tile";
+            if(sLevel[y][x] === 1) t.classList.add('t-wall');
+            if(sLevel[y][x] === 2) t.classList.add('t-target');
+            if(x === sP.x && y === sP.y) t.innerHTML = "👷";
+            sB.forEach(b => {
+                if(b.x === x && b.y === y) {
+                    t.classList.add('t-box'); t.innerText = b.val;
+                    if(sLevel[y][x] === 2) { t.classList.add('t-box-ok'); completed++; }
+                }
+            });
+            grid.appendChild(t);
+        }
+    }
+    if(completed === 4) { triggerExplosion(); showHistoryModal(rawQuests[curStep].trans); }
+}
+
+function moveP(dx, dy) {
+    let nx = sP.x + dx, ny = sP.y + dy;
+    if(sLevel[ny][nx] === 1) return;
+    let bIdx = sB.findIndex(b => b.x === nx && b.y === ny);
+    if(bIdx !== -1) {
+        let bnx = nx + dx, bny = ny + dy;
+        if(sLevel[bny][bnx] === 1 || sB.some(b => b.x === bnx && b.y === bny)) return;
+        sB[bIdx].x = bnx; sB[bIdx].y = bny;
+    }
+    sP.x = nx; sP.y = ny; drawS();
+}
+
+function showHistoryModal(year) {
+    document.getElementById('hist-year').innerText = "ERA DE " + year;
+    document.getElementById('hist-text').innerText = eraInfo[year];
+    document.getElementById('history-modal').classList.remove('hidden');
+}
+
+function proceedToQuiz() {
+    document.getElementById('history-modal').classList.add('hidden');
+    document.getElementById('sokoban-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+    isReady = true; renderQ();
+}
+
+function renderQ() {
+    const q = rawQuests[curStep];
+    if (q.trans && !isReady) {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('portal-screen').classList.remove('hidden');
+        document.getElementById('spin-btn').classList.remove('hidden');
+        document.getElementById('spin-btn').innerText = "GIRAR PARA " + q.trans;
+        return;
+    }
+    document.body.className = `era-${q.era}`;
+    document.getElementById('era-tag').innerText = `ERA ${q.era}`;
+    document.getElementById('q-txt').innerText = q.q.replace("[NAME]", playerName);
+    
+    // EMBARALHAR RESPOSTAS
+    const shuffledAns = shuffle([...q.ans]);
+    const oBox = document.getElementById('opts'); 
+    oBox.innerHTML = "";
+    
+    shuffledAns.forEach((a) => {
+        const b = document.createElement('button'); 
+        b.className = "opt-btn";
+        b.innerText = a; 
+        b.onclick = () => check(a, q.cor, b);
+        oBox.appendChild(b);
+    });
+    document.getElementById('fb-area').innerText = "";
+    document.getElementById('next-btn').classList.add('hidden');
+    isReady = false;
+}
+
+function check(selected, correct, btn) {
+    const q = rawQuests[curStep];
+    if(selected === correct) {
+        stats.correct++;
+        document.getElementById('fb-area').innerHTML = `<span style="color:#2ecc71">✓ Mandou muito bem, ${playerName}!</span><br><small style="color:#ccc">${q.hit}</small>`;
+        btn.style.background = "#2ecc71";
+        document.getElementById('next-btn').classList.remove('hidden');
+    } else {
+        if(!stats.mistakes.find(m => m.id === curStep)) {
+            stats.mistakes.push({ id: curStep, q: q.q.replace("[NAME]", playerName), h: q.hit });
+        }
+        document.getElementById('fb-area').innerHTML = `<span style="color:#ff4b4b">✗ Quase lá, ${playerName}...</span><br><small style="color:#ff6b6b">${q.hit}</small>`;
+        btn.style.background = "#ff4b4b";
+    }
+}
+
+function handleNext() {
+    curStep++;
+    if(curStep < rawQuests.length) renderQ();
+    else {
+        document.getElementById('quiz-screen').innerHTML = `<h2>RESULTADO FINAL: ${playerName} 🏆</h2><div style="background:#000; padding:15px; border-radius:10px; text-align:left; border:1px solid gold; max-height:250px; overflow-y:auto;">${stats.mistakes.map(m => `<p style='font-size:0.9rem'><b>QUESTÃO:</b> ${m.q}<br><b>EXPLICAÇÃO:</b> ${m.h}</p>`).join("") || "PARABÉNS! VOCÊ GABARITOU A SAGA!"}</div><button class="opt-btn" style="margin-top:15px; width:250px; background:gold; color:black; font-weight:bold" onclick="location.reload()">REINICIAR JORNADA</button>`;
+        triggerExplosion();
+    }
+}
+</script>
+</body>
+</html>

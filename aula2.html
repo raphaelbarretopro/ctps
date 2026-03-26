@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saga Trabalhista: Memória das Eras - Firjan SENAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Orbitron:wght@400;700&family=Roboto:wght@300;400;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d4af37; --bg: #0a0a0c; --panel: rgba(22, 22, 26, 0.95); --text: #f0f0f0;
+        }
+
+        body.era-1943 { background-color: #2c1e14; --primary: #d4af37; }
+        body.era-1966 { background-color: #0e2a1a; --primary: #2ecc71; }
+        body.era-1988 { background-color: #1a1a2e; --primary: #3498db; }
+        body.era-2017 { background-color: #05161a; --primary: #00e6ff; }
+
+        body { 
+            color: var(--text); font-family: 'Roboto', sans-serif; margin: 0; 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; transition: background 1s ease; overflow: hidden;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        #game-container { 
+            width: 95%; max-width: 850px; background: var(--panel); padding: 30px; 
+            border-radius: 20px; border: 3px solid var(--primary); backdrop-filter: blur(10px); 
+            text-align: center; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        .hidden { display: none !important; }
+
+        #memory-grid { 
+            display: grid; grid-template-columns: repeat(4, 120px); gap: 15px; 
+            justify-content: center; margin: 20px auto; perspective: 1000px; 
+        }
+
+        .memory-card { 
+            width: 120px; height: 160px; position: relative; 
+            transform-style: preserve-3d; transition: transform 0.6s; cursor: pointer; 
+        }
+
+        .memory-card.flipped { transform: rotateY(180deg); }
+
+        .card-front, .card-back { 
+            position: absolute; width: 100%; height: 100%; 
+            backface-visibility: hidden; border-radius: 10px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            border: 2px solid var(--primary); box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+            padding: 5px; box-sizing: border-box;
+        }
+
+        .card-front { background: #1a1a1a; color: var(--primary); font-family: 'Orbitron'; font-size: 2rem; }
+
+        .card-back { background: #fff; transform: rotateY(180deg); color: #000; }
+
+        .card-back img { width: 80%; height: auto; max-height: 70%; object-fit: contain; margin-bottom: 5px; }
+        .card-label { font-size: 0.7rem; font-weight: 900; text-transform: uppercase; text-align: center; font-family: 'Roboto'; }
+
+        .btn-start { 
+            background: var(--primary); color: #000; padding: 15px 40px; 
+            border: none; border-radius: 10px; font-weight: 900; 
+            cursor: pointer; font-family: 'Orbitron'; font-size: 1.2rem; transition: 0.3s;
+        }
+        .btn-start:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--primary); }
+
+        #p-name-input { 
+            padding: 15px; width: 70%; font-size: 1.5rem; text-align: center; 
+            border-radius: 10px; background: #000; color: #fff; 
+            border: 2px solid var(--primary); margin-bottom: 20px; outline: none;
+        }
+
+        .era-title { font-family: 'Cinzel'; font-size: 2.5rem; margin: 10px 0; color: var(--primary); text-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body class="era-1943">
+
+    <div id="game-container">
+        <div id="start-screen">
+            <h1 class="era-title">SAGA TRABALHISTA</h1>
+            <p>Raphael, digite o nome do aluno para começar o desafio de memória.</p>
+            <input type="text" id="p-name-input" placeholder="NOME DO ALUNO">
+            <br>
+            <button class="btn-start" onclick="startGame()">INICIAR DESAFIO</button>
+        </div>
+
+        <div id="game-screen" class="hidden">
+            <h2 id="current-era-display" class="era-title">ERA 1943</h2>
+            <p id="player-msg" style="font-weight: bold;"></p>
+            <div id="memory-grid"></div>
+        </div>
+    </div>
+
+<script>
+let playerName = "";
+let currentEraIndex = 0;
+let firstCard, secondCard;
+let lockBoard = false;
+let matchedPairs = 0;
+
+// Utilizando ícones e imagens de servidores estáveis (Flaticon/Freepik/WikiCommons estável)
+const eras = [
+    { 
+        year: "1943", 
+        label: "ERA VARGAS - CLT",
+        assets: [
+            {img: "https://cdn-icons-png.flaticon.com/512/3602/3602143.png", txt: "Getúlio Vargas"},
+            {img: "https://cdn-icons-png.flaticon.com/512/3534/3534033.png", txt: "Carteira Trabalho"},
+            {img: "https://cdn-icons-png.flaticon.com/512/2666/2666505.png", txt: "Salário Mínimo"},
+            {img: "https://cdn-icons-png.flaticon.com/512/2554/2554339.png", txt: "Jornada 8h"},
+            {img: "https://cdn-icons-png.flaticon.com/512/2830/2830305.png", txt: "Justiça Trabalho"},
+            {img: "https://cdn-icons-png.flaticon.com/512/1048/1048953.png", txt: "CLT 1943"}
+        ]
+    },
+    { 
+        year: "1966", 
+        label: "ERA DO FGTS",
+        assets: [
+            {img: "https://cdn-icons-png.flaticon.com/512/2845/2845874.png", txt: "FGTS"},
+            {img: "https://cdn-icons-png.flaticon.com/512/619/619153.png", txt: "Casa Própria"},
+            {img: "https://cdn-icons-png.flaticon.com/512/2721/2721091.png", txt: "Poupança"},
+            {img: "https://cdn-icons-png.flaticon.com/512/2942/2942261.png", txt: "Banco Central"},
+            {img: "https://cdn-icons-png.flaticon.com/512/1584/1584961.png", txt: "Construção"},
+            {img: "https://cdn-icons-png.flaticon.com/512/950/950299.png", txt: "Proteção"}
+        ]
+    },
+    { 
+        year: "1988", 
+        label: "CONSTITUIÇÃO CIDADÃ",
+        assets: [
+            {img: "https://cdn-icons-png.flaticon.com/512/3362/3362838.png", txt: "Constituição"},
+            {img: "https://cdn-icons-png.flaticon.com/512/4644/4644402.png", txt: "Maternidade"},
+            {img: "https://cdn-icons-png.flaticon.com/512/3652/3652191.png", txt: "1/3 Férias"},
+            {img: "https://cdn-icons-png.flaticon.com/512/1902/1902061.png", txt: "44h Semanais"},
+            {img: "https://cdn-icons-png.flaticon.com/512/3135/3135679.png", txt: "Seguro Desemprego"},
+            {img: "https://cdn-icons-png.flaticon.com/512/927/927313.png", txt: "Liberdade Sindical"}
+        ]
+    },
+    { 
+        year: "2017", 
+        label: "REFORMA E TECNOLOGIA",
+        assets: [
+            {img: "https://cdn-icons-png.flaticon.com/512/2504/2504732.png", txt: "Teletrabalho"},
+            {img: "https://cdn-icons-png.flaticon.com/512/3121/3121815.png", txt: "CTPS Digital"},
+            {img: "https://cdn-icons-png.flaticon.com/512/2641/2641409.png", txt: "Acordo Coletivo"},
+            {img: "https://cdn-icons-png.flaticon.com/512/3062/3062634.png", txt: "Modernização"},
+            {img: "https://cdn-icons-png.flaticon.com/512/2462/2462990.png", txt: "Intermitente"},
+            {img: "https://cdn-icons-png.flaticon.com/512/1086/1086741.png", txt: "Flexibilidade"}
+        ]
+    }
+];
+
+function startGame() {
+    playerName = document.getElementById('p-name-input').value.trim();
+    if (!playerName) { alert("Por favor, digite o nome do aluno."); return; }
+    
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    loadEra();
+}
+
+function loadEra() {
+    const era = eras[currentEraIndex];
+    document.body.className = `era-${era.year}`;
+    document.getElementById('current-era-display').innerText = era.label;
+    document.getElementById('player-msg').innerText = `${playerName}, complete os pares de ${era.year}!`;
+    
+    matchedPairs = 0;
+    const grid = document.getElementById('memory-grid');
+    grid.innerHTML = "";
+
+    let cardData = [...era.assets, ...era.assets];
+    cardData.sort(() => Math.random() - 0.5);
+
+    cardData.forEach(item => {
+        const card = document.createElement('div');
+        card.classList.add('memory-card');
+        card.dataset.info = item.txt;
+        card.innerHTML = `
+            <div class="card-front">?</div>
+            <div class="card-back">
+                <img src="${item.img}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1665/1665731.png'">
+                <div class="card-label">${item.txt}</div>
+            </div>
+        `;
+        card.addEventListener('click', flipCard);
+        grid.appendChild(card);
+    });
+}
+
+function flipCard() {
+    if (lockBoard) return;
+    if (this === firstCard) return;
+
+    this.classList.add('flipped');
+
+    if (!firstCard) {
+        firstCard = this;
+        return;
+    }
+
+    secondCard = this;
+    checkForMatch();
+}
+
+function checkForMatch() {
+    let isMatch = firstCard.dataset.info === secondCard.dataset.info;
+    isMatch ? disableCards() : unflipCards();
+}
+
+function disableCards() {
+    firstCard.removeEventListener('click', flipCard);
+    secondCard.removeEventListener('click', flipCard);
+    matchedPairs++;
+    resetBoard();
+    if (matchedPairs === 6) setTimeout(nextEra, 1000);
+}
+
+function unflipCards() {
+    lockBoard = true;
+    setTimeout(() => {
+        firstCard.classList.remove('flipped');
+        secondCard.classList.remove('flipped');
+        resetBoard();
+    }, 1000);
+}
+
+function resetBoard() {
+    [firstCard, secondCard] = [null, null];
+    lockBoard = false;
+}
+
+function nextEra() {
+    currentEraIndex++;
+    if (currentEraIndex < eras.length) {
+        alert(`Excelente, ${playerName}! Avançando para a próxima era...`);
+        loadEra();
+    } else {
+        document.getElementById('game-screen').innerHTML = `
+            <h1 class="era-title">Mestre da História!</h1>
+            <p>Parabéns, ${playerName}! Você concluiu toda a Saga Trabalhista.</p>
+            <button class="btn-start" onclick="location.reload()">REINICIAR JORNADA</button>
+        `;
+    }
+}
+</script>
+</body>
+</html>
